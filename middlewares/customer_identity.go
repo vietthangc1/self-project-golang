@@ -33,7 +33,7 @@ func ExtractUserMetaDataFromRequest(r *http.Request) interface{} {
 	)
 	customerToken := r.Header.Get(customerToken)
 	if customerToken != "" {
-		customerID, err := extractcustomerIDFromToken(customerToken)
+		customerID, err := extractValueFromToken(customerToken)
 		if err == nil {
 			customerIDFromToken = customerID
 		}
@@ -58,13 +58,13 @@ func ExtractUserMetaDataFromRequest(r *http.Request) interface{} {
 	}
 }
 
-func extractcustomerIDFromToken(s string) (string, error) {
+func extractValueFromToken(s string) (string, error) {
 	token := tokens.NewToken(s, "")
 
-	customerID, err := token.ExtractTokenKey()
+	value, err := token.ExtractTokenKey()
 	if err != nil {
-		logger.Error(err, "error in extract customer id from token", "token", token)
+		logger.Error(err, "error in extract value from token", "token", token)
 		return "", err
 	}
-	return customerID, err
+	return value, err
 }

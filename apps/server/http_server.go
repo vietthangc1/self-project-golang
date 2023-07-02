@@ -15,6 +15,7 @@ func NewHTTPserver(
 	s := gin.Default()
 
 	s.Use(middlewares.MiddlewareUserMetaData())
+	s.Use(middlewares.MiddlewareUserAdmin())
 
 	s.GET("/mock", mockHandler.Get)
 
