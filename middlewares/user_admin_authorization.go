@@ -37,13 +37,13 @@ func ExtractUserAdminFromRequest(r *http.Request) interface{} {
 		email, err := extractValueFromToken(userToken)
 		if err == nil {
 			userEmail = email
-			logger.DEBUG().Info("user", "user email", userEmail, "new_token", newToken)
+			logger.DEBUG().Info("user admin", "user email", userEmail, "new_token", newToken)
 			return &entities.UserAdminData{
 				Email: email,
 			}
 		}
 		logger.Error(err, "error in extract email from token", "token", token)
 	}
-	logger.DEBUG().Info("user", "new_token", newToken)
+	logger.DEBUG().Info("user admin", "new_token", newToken)
 	return nil
 }
