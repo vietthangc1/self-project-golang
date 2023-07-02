@@ -2,7 +2,6 @@ package token
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -67,7 +66,7 @@ func (t *Token) ExtractTokenKey() (string, error) {
 				fmt.Sprintf("unexpected signing method: %v", token.Header["alg"]),
 			)
 		}
-		return []byte(os.Getenv("API_SECRET")), nil
+		return []byte(envx.String("TOKEN_SECRET_KEY", "")), nil
 	})
 	if err != nil {
 		return "", err

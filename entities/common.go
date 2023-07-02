@@ -1,6 +1,6 @@
 package entities
 
 type UserMetadata struct {
-	CustomerID int32
+	CustomerID string
 	Platform   string
 }
