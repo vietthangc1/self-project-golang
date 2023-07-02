@@ -9,7 +9,7 @@ type ProductInfo struct {
 	Category    string `json:"category"`
 	SubCategory string `json:"sub_category"`
 	SKU         string `json:"sku"`
-	ImageUri    string `json:"image_uri"`
+	ImageURI    string `json:"image_uri"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	CreatedBy   string `json:"created_by"`

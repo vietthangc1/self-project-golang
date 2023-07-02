@@ -10,7 +10,7 @@ import (
 
 type ProductInfoService struct {
 	productRepo repo.ProductInfoRepo
-	logger logger.Logger
+	logger      logger.Logger
 }
 
 func NewProductInfoService(
@@ -18,14 +18,14 @@ func NewProductInfoService(
 ) *ProductInfoService {
 	return &ProductInfoService{
 		productRepo: productRepo,
-		logger: logger.Factory("ProductInfoService"),
+		logger:      logger.Factory("ProductInfoService"),
 	}
 }
 
-func (u *ProductInfoService) Create(ctx context.Context, product entities.ProductInfo) (entities.ProductInfo, error) {
+func (u *ProductInfoService) Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error) {
 	return u.productRepo.Create(ctx, product)
 }
 
-func (u *ProductInfoService) Get(ctx context.Context, id uint) (entities.ProductInfo, error) {
+func (u *ProductInfoService) Get(ctx context.Context, id uint) (*entities.ProductInfo, error) {
 	return u.productRepo.Get(ctx, id)
 }

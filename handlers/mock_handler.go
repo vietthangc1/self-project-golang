@@ -34,6 +34,6 @@ func (m *MockHandler) Get(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusFound, mockEn)
 	if err != nil {
 		m.logger.Error(err, "error parse json")
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("Error in parsing json, err: %w", err)})
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error in parsing json, err: %w", err)})
 	}
 }

@@ -2,6 +2,7 @@ package kvredis
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -15,8 +16,8 @@ type KVRedisImpl struct {
 }
 
 type KVRedis interface {
-	Get(ctx context.Context, key string) ([]byte, error) 
-	Set(ctx context.Context, key string, value []byte, ttl time.Duration) (error) 
+	Get(ctx context.Context, key string) ([]byte, error)
+	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
 }
 
 var _ KVRedis = &KVRedisImpl{}
@@ -32,14 +33,13 @@ func NewKVRedis(
 
 func (r *KVRedisImpl) Get(ctx context.Context, key string) ([]byte, error) {
 	buf, err := r.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		r.logger.Info("key not found", "key", key)
-		return nil, commonx.ErrNotFound 
+		return nil, commonx.ErrKeyNotFound
 	}
 	return buf, err
 }
 
-func (r *KVRedisImpl) Set(ctx context.Context, key string, value []byte, ttl time.Duration) (error) {
+func (r *KVRedisImpl) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
 	return r.client.Set(ctx, key, value, ttl).Err()
 }
-

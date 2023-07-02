@@ -14,7 +14,7 @@ const (
 
 type MockService struct {
 	mockRepo repo.MockRepo
-	logger logger.Logger
+	logger   logger.Logger
 }
 
 func NewMockService(
@@ -22,7 +22,7 @@ func NewMockService(
 ) *MockService {
 	return &MockService{
 		mockRepo: mockRepo,
-		logger: logger.Factory("MockService"),
+		logger:   logger.Factory("MockService"),
 	}
 }
 

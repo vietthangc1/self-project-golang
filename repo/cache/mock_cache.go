@@ -12,23 +12,23 @@ import (
 var _ repo.MockRepo = &MockCache{}
 
 type MockCache struct {
-	kvredis   kvredis.KVRedis
+	kvRedis   kvredis.KVRedis
 	mockMysql *mysql.MockMysql
 	logger    logger.Logger
 }
 
 func NewMockCache(
-	kvredis kvredis.KVRedis,
+	kvRedis kvredis.KVRedis,
 	mockMysql *mysql.MockMysql,
 ) *MockCache {
 	return &MockCache{
-		kvredis:   kvredis,
+		kvRedis:   kvRedis,
 		mockMysql: mockMysql,
 		logger:    logger.Factory("MockCache"),
 	}
 }
 
 func (m *MockCache) Get(ctx context.Context) error {
-	_, _ = m.kvredis.Get(ctx, "mock_key")
+	_, _ = m.kvRedis.Get(ctx, "mock_key")
 	return nil
 }

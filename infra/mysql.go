@@ -8,9 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-)
-
 func NewMySQLConnection() (*gorm.DB, error) {
 	l := logger.Factory("Setup Mysql")
 	dsn := envx.String("MYSQL_ADDR", "")

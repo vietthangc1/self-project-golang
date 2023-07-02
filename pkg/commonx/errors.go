@@ -1,7 +1,18 @@
 package commonx
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
-	ErrNotFound error = errors.New("not found")
+	ErrItemNotFound   error = errors.New("item not found")
+	ErrUnknown        error = errors.New("unknown")
+	ErrKeyNotFound    error = errors.New("key not found")
+	ErrWrongMethod    error = errors.New("wrong method")
+	ErrNotFoundParams error = errors.New("params not found")
 )
+
+func ErrorMessages(err error, msg string) error {
+	return fmt.Errorf("%s, err: %w", msg, err)
+}

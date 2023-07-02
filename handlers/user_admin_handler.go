@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thangpham4/self-project/entities"
+	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
 )
@@ -49,7 +49,7 @@ func (u *UserAdminHandler) Get(ctx *gin.Context) {
 	id, ok := ctx.Params.Get("id")
 	if !ok {
 		errString := "not found id in url params"
-		u.logger.Error(fmt.Errorf(errString), errString)
+		u.logger.Error(commonx.ErrNotFoundParams, errString)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": errString})
 		return
 	}

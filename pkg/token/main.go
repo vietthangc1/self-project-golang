@@ -1,12 +1,12 @@
 package token
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/envx"
 )
 
@@ -32,7 +32,6 @@ func NewToken(
 }
 
 func (t *Token) GenerateToken() (string, error) {
-
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["key"] = t.Key
@@ -46,7 +45,10 @@ func (t *Token) CheckValidToken() error {
 	tokenString := t.Token
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, commonx.ErrorMessages(
+				commonx.ErrWrongMethod,
+				fmt.Sprintf("unexpected signing method: %v", token.Header["alg"]),
+			)
 		}
 		return []byte(envx.String("TOKEN_SECRET_KEY", "")), nil
 	})
@@ -60,7 +62,10 @@ func (t *Token) ExtractTokenKey() (string, error) {
 	tokenString := t.Token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, commonx.ErrorMessages(
+				commonx.ErrWrongMethod,
+				fmt.Sprintf("unexpected signing method: %v", token.Header["alg"]),
+			)
 		}
 		return []byte(os.Getenv("API_SECRET")), nil
 	})
@@ -71,7 +76,7 @@ func (t *Token) ExtractTokenKey() (string, error) {
 	if ok && token.Valid {
 		key, exist := claims["key"].(string)
 		if !exist {
-			return "", errors.New("not existing key")
+			return "", commonx.ErrorMessages(commonx.ErrKeyNotFound, fmt.Sprintf("not found key: %s", key))
 		}
 		return key, nil
 	}

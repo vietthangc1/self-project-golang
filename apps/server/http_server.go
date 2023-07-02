@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/thangpham4/self-project/handlers"
+	"github.com/thangpham4/self-project/middlewares"
 )
 
 func NewHTTPserver(
@@ -12,6 +13,8 @@ func NewHTTPserver(
 	productHandler *handlers.ProductInfoHandler,
 ) *gin.Engine {
 	s := gin.Default()
+
+	s.Use(middlewares.MiddlewareUserMetaData())
 
 	s.GET("/mock", mockHandler.Get)
 

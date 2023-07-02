@@ -10,7 +10,7 @@ func envClean(key string) string {
 	return strings.TrimSpace(os.Getenv(key))
 }
 
-func String(key string, defaultValue string) string {
+func String(key, defaultValue string) string {
 	envValue := envClean(key)
 	if envValue == "" {
 		return defaultValue
@@ -18,16 +18,14 @@ func String(key string, defaultValue string) string {
 	return envValue
 }
 
-
 func Int(key string, defaultValue int32) int32 {
 	envValue := envClean(key)
 	if envValue == "" {
 		return defaultValue
 	}
-	envValueInt, err := strconv.Atoi(envValue)
+	envValueInt, err := strconv.ParseInt(envValue, 10, 32)
 	if err != nil {
 		return defaultValue
 	}
 	return int32(envValueInt)
 }
-

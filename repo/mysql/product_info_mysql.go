@@ -20,21 +20,21 @@ func NewProductInfoMysql(
 	}
 }
 
-func (u *ProductInfoMysql) Create(ctx context.Context, product entities.ProductInfo) (entities.ProductInfo, error) {
-	err := u.db.WithContext(ctx).Create(&product).Error
+func (u *ProductInfoMysql) Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error) {
+	err := u.db.WithContext(ctx).Create(product).Error
 	if err != nil {
-		return entities.ProductInfo{}, fmt.Errorf("cannot create product, product: %v, err: %w", product, err)
+		return nil, fmt.Errorf("cannot create product, product: %v, err: %w", product, err)
 	}
 	return product, nil
 }
 
-func (u *ProductInfoMysql) Get(ctx context.Context, id uint) (entities.ProductInfo, error) {
-	var product = entities.ProductInfo{
+func (u *ProductInfoMysql) Get(ctx context.Context, id uint) (*entities.ProductInfo, error) {
+	var product = &entities.ProductInfo{
 		ID: id,
 	}
-	err := u.db.WithContext(ctx).First(&product).Error
+	err := u.db.WithContext(ctx).First(product).Error
 	if err != nil {
-		return entities.ProductInfo{}, fmt.Errorf("cannot find product, id: %d, err: %w", id, err)
+		return nil, fmt.Errorf("cannot find product, id: %d, err: %w", id, err)
 	}
 	return product, nil
 }

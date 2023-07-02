@@ -10,7 +10,7 @@ import (
 
 type UserAdminService struct {
 	userRepo repo.UserAdminRepo
-	logger logger.Logger
+	logger   logger.Logger
 }
 
 func NewUserAdminService(
@@ -18,7 +18,7 @@ func NewUserAdminService(
 ) *UserAdminService {
 	return &UserAdminService{
 		userRepo: userRepo,
-		logger: logger.Factory("UserAdminService"),
+		logger:   logger.Factory("UserAdminService"),
 	}
 }
 

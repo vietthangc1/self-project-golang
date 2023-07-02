@@ -6,4 +6,4 @@ var Set = wire.NewSet(
 	NewMockService,
 	NewUserAdminService,
 	NewProductInfoService,
-	)
+)
