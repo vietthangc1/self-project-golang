@@ -1,35 +1,43 @@
 package infra
 
 import (
-  "context"
-  "fmt"
+	"context"
 
-  "go.mongodb.org/mongo-driver/bson"
-  "go.mongodb.org/mongo-driver/mongo"
-  "go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/thangpham4/self-project/pkg/envx"
+	"github.com/thangpham4/self-project/pkg/logger"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func main() {
-  // Use the SetServerAPIOptions() method to set the Stable API version to 1
-  serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-  opts := options.Client().ApplyURI("mongodb+srv://vietthangc1:<password>@cluster0.le7ea.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+func NewMongoDBConnection() (*mongo.Client, error) {
+	l := logger.Factory("Setup MongoDB")
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	uri := envx.String("MONGO_ADDR", "")
+	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 
-  // Create a new client and connect to the server
-  client, err := mongo.Connect(context.TODO(), opts)
-  if err != nil {
-    panic(err)
-  }
+	// Create a new client and connect to the server
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
 
-  defer func() {
-    if err = client.Disconnect(context.TODO()); err != nil {
-      panic(err)
-    }
-  }()
+	// defer func() {
+	// 	if err = client.Disconnect(context.TODO()); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
 
-  // Send a ping to confirm a successful connection
-  if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
-    panic(err)
-  }
-  fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	// Send a ping to confirm a successful connection
+	if err := client.Database("self-project").RunCommand(
+		context.TODO(),
+		bson.D{primitive.E{Key: "ping", Value: 1}},
+	).Err(); err != nil {
+		l.V(logger.LogErrorLevel).Error(err, "failed to set up mongodb", "uri", uri)
+		return nil, err
+	}
+	l.V(logger.LogInfoLevel).Info("successfully set up mongodb", "uri", uri)
+
+	return client, nil
 }
-

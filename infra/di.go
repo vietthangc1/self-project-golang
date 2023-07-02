@@ -7,6 +7,8 @@ import (
 
 var Set = wire.NewSet(
 	NewMySQLConnection,
+	NewMongoDBConnection,
+	NewSheetService,
 
 	NewRedisConfig,
 	NewRedisClient,
