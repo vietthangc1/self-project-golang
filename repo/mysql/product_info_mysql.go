@@ -24,7 +24,7 @@ func NewProductInfoMysql(
 func (u *ProductInfoMysql) Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error) {
 	err := u.db.WithContext(ctx).Create(product).Error
 	if err != nil {
-		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot create product"))
+		return nil, commonx.ErrorMessages(err, "cannot create product")
 	}
 	return product, nil
 }

@@ -7,4 +7,5 @@ var Set = wire.NewSet(
 	NewUserAdminService,
 	NewProductInfoService,
 	NewReadModelDataService,
+	NewModelInfoService,
 )

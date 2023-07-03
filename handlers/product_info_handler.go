@@ -37,7 +37,7 @@ func (u *ProductInfoHandler) Create(ctx *gin.Context) {
 
 	productPointer, err := u.productService.Create(ctx, &product)
 	if err != nil {
-		u.logger.Error(err, "error in create user", "product", product)
+		u.logger.Error(err, "error in create product", "product", product)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -63,9 +63,9 @@ func (u *ProductInfoHandler) Get(ctx *gin.Context) {
 
 	product, err := u.productService.Get(ctx, uint(idInt))
 	if err != nil {
-		u.logger.Error(err, "error in getting user", "id", id)
+		u.logger.Error(err, "error in getting product", "id", id)
 		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
-	ctx.IndentedJSON(http.StatusFound, product)
+	ctx.IndentedJSON(http.StatusOK, product)
 }

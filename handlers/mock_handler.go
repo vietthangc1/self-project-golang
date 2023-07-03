@@ -31,7 +31,7 @@ func (m *MockHandler) GetCache(ctx *gin.Context) {
 		m.logger.Error(err, "unknown")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "err unknown"})
 	}
-	ctx.IndentedJSON(http.StatusFound, mockEn)
+	ctx.IndentedJSON(http.StatusOK, mockEn)
 	if err != nil {
 		m.logger.Error(err, "error parse json")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error in parsing json, err: %w", err)})
@@ -46,7 +46,7 @@ func (m *MockHandler) GetMockMongo(ctx *gin.Context) {
 		m.logger.Error(err, "unknown")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "err unknown"})
 	}
-	ctx.IndentedJSON(http.StatusFound, mockEn)
+	ctx.IndentedJSON(http.StatusOK, mockEn)
 	if err != nil {
 		m.logger.Error(err, "error parse json")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error in parsing json, err: %w", err)})

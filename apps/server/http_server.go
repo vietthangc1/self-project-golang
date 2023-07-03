@@ -12,6 +12,7 @@ func NewHTTPserver(
 	userHandler *handlers.UserAdminHandler,
 	productHandler *handlers.ProductInfoHandler,
 	modelHandler *handlers.ReadModelDataHandler,
+	modelInfoHandler *handlers.ModelInfoHandler,
 ) *gin.Engine {
 	s := gin.Default()
 
@@ -28,5 +29,9 @@ func NewHTTPserver(
 	s.GET("/product/get/:id", productHandler.Get)
 
 	s.POST("/model/sheet", modelHandler.ReadModelData)
+
+	s.POST("/model/create", modelInfoHandler.Create)
+	s.GET("/model/id/:id", modelInfoHandler.GetByID)
+	s.GET("/model/code/:code", modelInfoHandler.GetByCode)
 	return s
 }

@@ -7,4 +7,5 @@ var Set = wire.NewSet(
 	NewUserAdminHandler,
 	NewProductInfoHandler,
 	NewReadModelDataHandler,
+	NewModelInfoHandler,
 )

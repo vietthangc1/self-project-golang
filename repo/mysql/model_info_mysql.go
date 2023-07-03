@@ -28,7 +28,7 @@ func (m *ModelInfoMysql) GetByID(
 	var model = &entities.ModelInfo{
 		ID: id,
 	}
-	err := m.db.WithContext(ctx).First(model).Error
+	err := m.db.WithContext(ctx).Preload("Source").First(model).Error
 	if err != nil {
 		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot find model, id: %d", id))
 	}
@@ -42,7 +42,7 @@ func (m *ModelInfoMysql) GetByCode(
 	var model = &entities.ModelInfo{
 		Code: code,
 	}
-	err := m.db.WithContext(ctx).First(model).Error
+	err := m.db.WithContext(ctx).Preload("Source").First(model).Error
 	if err != nil {
 		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot find model, code: %s", code))
 	}

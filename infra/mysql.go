@@ -21,6 +21,8 @@ func NewMySQLConnection() (*gorm.DB, error) {
 		&entities.UserAdmin{},
 		&entities.ProductInfo{},
 		&entities.CustomerInfo{},
+		&entities.ModelSource{},
+		&entities.ModelInfo{},
 	)
 	if err != nil {
 		l.V(logger.LogErrorLevel).Error(err, "error in migrating database")
