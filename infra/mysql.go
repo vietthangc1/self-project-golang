@@ -20,6 +20,7 @@ func NewMySQLConnection() (*gorm.DB, error) {
 	err = db.AutoMigrate(
 		&entities.UserAdmin{},
 		&entities.ProductInfo{},
+		&entities.CustomerInfo{},
 	)
 	if err != nil {
 		l.V(logger.LogErrorLevel).Error(err, "error in migrating database")
