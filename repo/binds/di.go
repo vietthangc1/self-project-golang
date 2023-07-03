@@ -6,6 +6,7 @@ import (
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mongodb"
 	"github.com/thangpham4/self-project/repo/mysql"
+	"github.com/thangpham4/self-project/repo/sheet"
 )
 
 var Set = wire.NewSet(
@@ -17,4 +18,5 @@ var Set = wire.NewSet(
 	wire.Bind(new(repo.UserAdminRepo), new(*mysql.UserAdminMysql)),
 	wire.Bind(new(repo.ProductInfoRepo), new(*cache.ProductInfoCache)),
 	wire.Bind(new(repo.MockMongoDBRepo), new(*mongodb.MockMongoDB)),
+	wire.Bind(new(repo.ReadModelDataRepo), new(*sheet.ReadModelSheet)),
 )

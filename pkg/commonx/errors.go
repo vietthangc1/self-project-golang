@@ -6,11 +6,12 @@ import (
 )
 
 var (
-	ErrItemNotFound   error = errors.New("item not found")
-	ErrUnknown        error = errors.New("unknown")
-	ErrKeyNotFound    error = errors.New("key not found")
-	ErrWrongMethod    error = errors.New("wrong method")
-	ErrNotFoundParams error = errors.New("params not found")
+	ErrItemNotFound        error = errors.New("item not found")
+	ErrUnknown             error = errors.New("unknown")
+	ErrKeyNotFound         error = errors.New("key not found")
+	ErrWrongMethod         error = errors.New("wrong method")
+	ErrNotFoundParams      error = errors.New("params not found")
+	ErrInsufficientDataGet error = errors.New("insufficient data get")
 )
 
 func ErrorMessages(err error, msg string) error {
