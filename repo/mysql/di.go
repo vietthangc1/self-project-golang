@@ -6,4 +6,5 @@ var Set = wire.NewSet(
 	NewMockMysql,
 	NewUserAdminMysql,
 	NewProductInfoMysql,
+	NewModelInfoMysql,
 )

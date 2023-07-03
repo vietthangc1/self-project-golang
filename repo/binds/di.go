@@ -20,4 +20,5 @@ var Set = wire.NewSet(
 	wire.Bind(new(repo.ProductInfoRepo), new(*cache.ProductInfoCache)),
 	wire.Bind(new(repo.MockMongoDBRepo), new(*mongodb.MockMongoDB)),
 	wire.Bind(new(repo.ReadModelDataRepo), new(*sheet.ReadModelSheet)),
+	wire.Bind(new(repo.ModelInfoRepo), new(*mysql.ModelInfoMysql)),
 )

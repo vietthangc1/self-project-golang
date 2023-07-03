@@ -5,14 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
 )
-
-type ReadModelDataRequest struct {
-	SheetName string `json:"sheet_name"`
-	SheetID   string `json:"sheet_id"`
-}
 
 type ReadModelDataHandler struct {
 	modelService *services.ReadModelDataService
@@ -31,7 +27,7 @@ func NewReadModelDataHandler(
 func (h *ReadModelDataHandler) ReadModelData(
 	ctx *gin.Context,
 ) {
-	var request ReadModelDataRequest
+	var request entities.ModelSource
 	err := json.NewDecoder(ctx.Request.Body).Decode(&request)
 	if err != nil {
 		h.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
@@ -45,5 +41,12 @@ func (h *ReadModelDataHandler) ReadModelData(
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	ctx.IndentedJSON(http.StatusOK, out)
+}
+
+func (h *ReadModelDataHandler) ReturnProductScoreForModel(
+	ctx *gin.Context,
+) {
+
 }
