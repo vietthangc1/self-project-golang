@@ -86,10 +86,14 @@ func (r *ReadModelSheet) GetModelRawData(
 	return keyRaw, productIDRaw, scoreRaw, nil
 }
 
-func (r *ReadModelSheet) GetModelData(
+func (r *ReadModelSheet) ReadModelData(
 	ctx context.Context,
-	keyRaw, productIDRaw, scoreRaw []string,
+	sheetID, sheetName string,
 ) ([]*entities.ModelDataMaster, error) {
+	keyRaw, productIDRaw, scoreRaw, err := r.GetModelRawData(ctx, sheetID, sheetName)
+	if err != nil {
+		return nil, err
+	}
 	// skip header
 	keyRaw = keyRaw[1:]
 	productIDRaw = productIDRaw[1:]

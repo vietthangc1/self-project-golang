@@ -13,9 +13,11 @@ import (
 	"github.com/thangpham4/self-project/handlers"
 	"github.com/thangpham4/self-project/infra"
 	"github.com/thangpham4/self-project/pkg/kvredis"
+	"github.com/thangpham4/self-project/pkg/sheets"
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mongodb"
 	"github.com/thangpham4/self-project/repo/mysql"
+	"github.com/thangpham4/self-project/repo/sheet"
 	"github.com/thangpham4/self-project/services"
 )
 
@@ -48,6 +50,14 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	productInfoCache := cache.NewProductInfoCache(kvRedisImpl, productInfoMysql)
 	productInfoService := services.NewProductInfoService(productInfoCache)
 	productInfoHandler := handlers.NewProductInfoHandler(productInfoService)
-	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler)
+	service, err := infra.NewSheetService(contextContext)
+	if err != nil {
+		return nil, err
+	}
+	sheetService := sheets.NewSheetService(service)
+	readModelSheet := sheet.NewReadModelSheet(sheetService)
+	readModelDataService := services.NewReadModelDataService(readModelSheet)
+	readModelDataHandler := handlers.NewReadModelDataHandler(readModelDataService)
+	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler, readModelDataHandler)
 	return engine, nil
 }

@@ -36,6 +36,7 @@ func NewMockCache(
 	}
 }
 
+//nolint:nestif
 func (m *MockCache) Get(ctx context.Context) error {
 	_, err := m.kvRedis.Get(ctx, "mock_key")
 	if err != nil {

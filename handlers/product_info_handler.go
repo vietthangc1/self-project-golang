@@ -27,22 +27,22 @@ func NewProductInfoHandler(
 }
 
 func (u *ProductInfoHandler) Create(ctx *gin.Context) {
-	var product *entities.ProductInfo
-	err := json.NewDecoder(ctx.Request.Body).Decode(product)
+	var product entities.ProductInfo
+	err := json.NewDecoder(ctx.Request.Body).Decode(&product)
 	if err != nil {
 		u.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	product, err = u.productService.Create(ctx, product)
+	productPointer, err := u.productService.Create(ctx, &product)
 	if err != nil {
 		u.logger.Error(err, "error in create user", "product", product)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusCreated, product)
+	ctx.IndentedJSON(http.StatusCreated, productPointer)
 }
 
 func (u *ProductInfoHandler) Get(ctx *gin.Context) {

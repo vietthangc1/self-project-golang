@@ -13,6 +13,7 @@ var Set = wire.NewSet(
 	mysql.Set,
 	cache.Set,
 	mongodb.Set,
+	sheet.Set,
 
 	wire.Bind(new(repo.MockRepo), new(*cache.MockCache)),
 	wire.Bind(new(repo.UserAdminRepo), new(*mysql.UserAdminMysql)),

@@ -7,8 +7,8 @@ import (
 )
 
 type ReadModelDataRepo interface {
-	GetModelData(
+	ReadModelData(
 		ctx context.Context,
-		keyRaw, productIDRaw, scoreRaw []string,
+		sheetID, sheetName string,
 	) ([]*entities.ModelDataMaster, error)
 }

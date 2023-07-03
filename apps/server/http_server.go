@@ -11,6 +11,7 @@ func NewHTTPserver(
 	mockHandler *handlers.MockHandler,
 	userHandler *handlers.UserAdminHandler,
 	productHandler *handlers.ProductInfoHandler,
+	modelHandler *handlers.ReadModelDataHandler,
 ) *gin.Engine {
 	s := gin.Default()
 
@@ -26,5 +27,6 @@ func NewHTTPserver(
 	s.POST("/product/create", productHandler.Create)
 	s.GET("/product/get/:id", productHandler.Get)
 
+	s.POST("/model/sheet", modelHandler.ReadModelData)
 	return s
 }
