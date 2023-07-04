@@ -29,3 +29,7 @@ func (u *UserAdminService) Create(ctx context.Context, user entities.UserAdmin) 
 func (u *UserAdminService) Get(ctx context.Context, id uint) (entities.UserAdmin, error) {
 	return u.userRepo.Get(ctx, id)
 }
+
+func (u *UserAdminService) GetByEmail(ctx context.Context, email string) (entities.UserAdmin, error) {
+	return u.userRepo.GetByEmail(ctx, email)
+}

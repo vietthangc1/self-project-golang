@@ -13,22 +13,45 @@ import (
 )
 
 type ProductInfoHandler struct {
-	productService *services.ProductInfoService
-	logger         logger.Logger
+	productService   *services.ProductInfoService
+	userAdminService *services.UserAdminService
+	logger           logger.Logger
 }
 
 func NewProductInfoHandler(
 	productService *services.ProductInfoService,
+	userAdminService *services.UserAdminService,
 ) *ProductInfoHandler {
 	return &ProductInfoHandler{
-		productService: productService,
-		logger:         logger.Factory("ProductInfoHandler"),
+		productService:   productService,
+		userAdminService: userAdminService,
+		logger:           logger.Factory("ProductInfoHandler"),
 	}
 }
 
 func (u *ProductInfoHandler) Create(ctx *gin.Context) {
+	userAdminContex := ctx.Value(commonx.UserAdminCtxKey)
+	if userAdminContex == nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "cannot find user info")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
+		return
+	}
+	userAdminInfo := userAdminContex.(*entities.UserAdminData)
+	var user entities.UserAdmin
+	user, err := u.userAdminService.GetByEmail(ctx, userAdminInfo.Email)
+	if err != nil {
+		u.logger.Error(err, "cannot find this email", "email", userAdminInfo.Email)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	if user.Role == 0 || user.Role == 1 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to create product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+
 	var product entities.ProductInfo
-	err := json.NewDecoder(ctx.Request.Body).Decode(&product)
+	err = json.NewDecoder(ctx.Request.Body).Decode(&product)
 	if err != nil {
 		u.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -46,6 +69,26 @@ func (u *ProductInfoHandler) Create(ctx *gin.Context) {
 }
 
 func (u *ProductInfoHandler) Get(ctx *gin.Context) {
+	userAdminContex := ctx.Value(commonx.UserAdminCtxKey)
+	if userAdminContex == nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "cannot find user info")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
+		return
+	}
+	userAdminInfo := userAdminContex.(*entities.UserAdminData)
+	var user entities.UserAdmin
+	user, err := u.userAdminService.GetByEmail(ctx, userAdminInfo.Email)
+	if err != nil {
+		u.logger.Error(err, "cannot find this email", "email", userAdminInfo.Email)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	if user.Role == 0 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to read product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+
 	id, ok := ctx.Params.Get("id")
 	if !ok {
 		const errString = "not found id in url params"

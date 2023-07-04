@@ -49,7 +49,7 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	productInfoMysql := mysql.NewProductInfoMysql(db)
 	productInfoCache := cache.NewProductInfoCache(kvRedisImpl, productInfoMysql)
 	productInfoService := services.NewProductInfoService(productInfoCache)
-	productInfoHandler := handlers.NewProductInfoHandler(productInfoService)
+	productInfoHandler := handlers.NewProductInfoHandler(productInfoService, userAdminService)
 	service, err := infra.NewSheetService(contextContext)
 	if err != nil {
 		return nil, err

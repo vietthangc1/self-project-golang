@@ -12,6 +12,8 @@ var (
 	ErrWrongMethod         error = errors.New("wrong method")
 	ErrNotFoundParams      error = errors.New("params not found")
 	ErrInsufficientDataGet error = errors.New("insufficient data get")
+	ErrUnauthorized        error = errors.New("unaurhorized")
+	ErrNotAuthenticated    error = errors.New("not authenticated")
 )
 
 func ErrorMessages(err error, msg string) error {
