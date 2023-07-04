@@ -8,4 +8,5 @@ var Set = wire.NewSet(
 	NewProductInfoHandler,
 	NewReadModelDataHandler,
 	NewModelInfoHandler,
+	NewBlockInfoHanfler,
 )

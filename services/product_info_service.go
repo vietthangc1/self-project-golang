@@ -29,3 +29,7 @@ func (u *ProductInfoService) Create(ctx context.Context, product *entities.Produ
 func (u *ProductInfoService) Get(ctx context.Context, id uint) (*entities.ProductInfo, error) {
 	return u.productRepo.Get(ctx, id)
 }
+
+func (u *ProductInfoService) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
+	return u.productRepo.GetMany(ctx, ids)
+}

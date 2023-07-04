@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/thangpham4/self-project/entities"
@@ -38,6 +39,32 @@ func NewProductInfoCache(
 	}
 }
 
+func (u *ProductInfoCache) BuildCacheKey(ids []uint) []string {
+	out := []string{}
+	for _, id := range ids {
+		out = append(out, fmt.Sprintf("%s%d", ProductCacheKeyPrefix, id))
+	}
+	return out
+}
+
+func (u *ProductInfoCache) CacheKeyToID(keys []string) []uint {
+	out := []uint{}
+	for _, key := range keys {
+		if len(key) <= len(ProductCacheKeyPrefix) {
+			continue
+		}
+
+		idStr := key[len(ProductCacheKeyPrefix):]
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		out = append(out, uint(id))
+	}
+	return out
+}
+
 func (u *ProductInfoCache) Get(ctx context.Context, id uint) (*entities.ProductInfo, error) {
 	key := fmt.Sprintf("%s%d", ProductCacheKeyPrefix, id)
 	buf, err := u.kvRedis.Get(ctx, key)
@@ -54,6 +81,34 @@ func (u *ProductInfoCache) Get(ctx context.Context, id uint) (*entities.ProductI
 		return nil, err
 	}
 	return product, nil
+}
+
+func (u *ProductInfoCache) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
+	keys := u.BuildCacheKey(ids)
+	bufs, invalidKeys, err := u.kvRedis.GetMany(ctx, keys)
+	if err != nil {
+		u.logger.Error(err, "error in get product cache")
+	}
+
+	products := make([]*entities.ProductInfo, 0, len(bufs))
+	product := &entities.ProductInfo{}
+
+	for k, buf := range bufs {
+		err = json.Unmarshal(buf, &product)
+		if err != nil {
+			invalidKeys = append(invalidKeys, k)
+			u.logger.Error(err, "unmarshaling cache product")
+			continue
+		}
+		products = append(products, product)
+	}
+
+	productsQuery, err := u.GetManyandSetMany(ctx, invalidKeys)
+	if err != nil {
+		u.logger.Error(err, "cannot get more products from db")
+	}
+	products = append(products, productsQuery...)
+	return products, nil
 }
 
 func (u *ProductInfoCache) Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error) {
@@ -79,4 +134,28 @@ func (u *ProductInfoCache) GetandSet(ctx context.Context, id uint) (*entities.Pr
 		u.logger.Error(err, "error in saving to cache", "id", id)
 	}
 	return product, nil
+}
+
+func (u *ProductInfoCache) GetManyandSetMany(ctx context.Context, keys []string) ([]*entities.ProductInfo, error) {
+	ids := u.CacheKeyToID(keys)
+	products, err := u.productMysql.GetMany(ctx, ids)
+	if err != nil {
+		u.logger.Error(err, "error in getting product from mysql", "ids", ids)
+		return nil, err
+	}
+
+	for _, product := range products {
+		buf, err := json.Marshal(product)
+		if err != nil {
+			u.logger.Error(err, "err in buffering product", "id", product.ID)
+			continue
+		}
+
+		err = u.kvRedis.Set(ctx, u.BuildCacheKey([]uint{product.ID})[0], buf, ProductCacheTTL)
+		if err != nil {
+			u.logger.Error(err, "error in saving to cache", "id", product.ID)
+			continue
+		}
+	}
+	return products, nil
 }

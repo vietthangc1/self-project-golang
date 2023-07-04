@@ -18,6 +18,7 @@ type KVRedisImpl struct {
 type KVRedis interface {
 	Get(ctx context.Context, key string) ([]byte, error)
 	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
+	GetMany(ctx context.Context, keys []string) (map[string][]byte, []string, error)
 }
 
 var _ KVRedis = &KVRedisImpl{}
@@ -38,6 +39,36 @@ func (r *KVRedisImpl) Get(ctx context.Context, key string) ([]byte, error) {
 		return nil, commonx.ErrKeyNotFound
 	}
 	return buf, err
+}
+
+//nolint:gocritic
+func (r *KVRedisImpl) GetMany(ctx context.Context, keys []string) (map[string][]byte, []string, error) {
+	inValidKeys := []string{}
+
+	pipe := r.client.Pipeline()
+	cmds := map[string]*redis.StringCmd{}
+
+	for _, key := range keys {
+		cmds[key] = pipe.Get(ctx, key)
+	}
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		r.logger.Error(err, "redis exec error")
+		return nil, nil, err
+	}
+
+	out := map[string][]byte{}
+	for k, cmd := range cmds {
+		buf, err := cmd.Bytes()
+		if err != nil {
+			inValidKeys = append(inValidKeys, k)
+			continue
+		}
+		out[k] = buf
+	}
+
+	return out, inValidKeys, nil
 }
 
 func (r *KVRedisImpl) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {

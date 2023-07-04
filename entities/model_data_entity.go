@@ -12,7 +12,7 @@ type ModelDataMaster struct {
 
 type ModelInfo struct {
 	ID            uint         `gorm:"autoIncrement" json:"id,omitempty"`
-	Code          string       `json:"code"`
+	Code          string       `json:"code" gorm:"unique"`
 	ModelSourceID uint         `json:"model_source_id,omitempty"`
 	Source        *ModelSource `json:"source,omitempty" gorm:"foreignKey:ModelSourceID;references:ID"`
 }

@@ -17,13 +17,16 @@ func NewMySQLConnection() (*gorm.DB, error) {
 		return nil, err
 	}
 	l.V(logger.LogInfoLevel).Info("successfully set up mysql", "mysql_uri", dsn)
+
 	err = db.AutoMigrate(
 		&entities.UserAdmin{},
 		&entities.ProductInfo{},
 		&entities.CustomerInfo{},
 		&entities.ModelSource{},
 		&entities.ModelInfo{},
+		&entities.BlockInfo{},
 	)
+
 	if err != nil {
 		l.V(logger.LogErrorLevel).Error(err, "error in migrating database")
 	}

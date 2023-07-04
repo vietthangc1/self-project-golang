@@ -8,4 +8,5 @@ var Set = wire.NewSet(
 	NewProductInfoService,
 	NewReadModelDataService,
 	NewModelInfoService,
+	NewBlockInfoService,
 )
