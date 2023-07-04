@@ -1,20 +1,20 @@
 package entities
 
 type ModelDataItem struct {
-	ProductID int32
-	Rank      float32
+	ProductID int32   `json:"product_id"`
+	Rank      float32 `json:"rank"`
 }
 
 type ModelDataMaster struct {
-	Key         string
-	ProductRank []*ModelDataItem
+	Key         string           `json:"key"`
+	ProductRank []*ModelDataItem `json:"product_rank"`
 }
 
 type ModelInfo struct {
-	ID            uint        `gorm:"autoIncrement" json:"id"`
-	Code          string      `json:"code"`
-	ModelSourceID uint        `json:"model_source_id"`
-	Source        *ModelSource `json:"source" gorm:"foreignKey:ModelSourceID;references:ID"`
+	ID            uint         `gorm:"autoIncrement" json:"id,omitempty"`
+	Code          string       `json:"code"`
+	ModelSourceID uint         `json:"model_source_id,omitempty"`
+	Source        *ModelSource `json:"source,omitempty" gorm:"foreignKey:ModelSourceID;references:ID"`
 }
 
 type ModelSource struct {

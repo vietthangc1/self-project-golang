@@ -33,5 +33,6 @@ func NewHTTPserver(
 	s.POST("/model/create", modelInfoHandler.Create)
 	s.GET("/model/id/:id", modelInfoHandler.GetByID)
 	s.GET("/model/code/:code", modelInfoHandler.GetByCode)
+	s.GET("/model/score", modelHandler.ProductScoreModelForCustomer)
 	return s
 }

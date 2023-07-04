@@ -57,9 +57,9 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	sheetService := sheets.NewSheetService(service)
 	readModelSheet := sheet.NewReadModelSheet(sheetService)
 	readModelDataService := services.NewReadModelDataService(readModelSheet)
-	readModelDataHandler := handlers.NewReadModelDataHandler(readModelDataService)
 	modelInfoMysql := mysql.NewModelInfoMysql(db)
 	modelInfoService := services.NewModelInfoService(modelInfoMysql)
+	readModelDataHandler := handlers.NewReadModelDataHandler(readModelDataService, modelInfoService)
 	modelInfoHandler := handlers.NewModelInfoHandler(modelInfoService)
 	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler, readModelDataHandler, modelInfoHandler)
 	return engine, nil
