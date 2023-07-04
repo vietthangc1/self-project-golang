@@ -7,7 +7,7 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
-	tokens "github.com/thangpham4/self-project/pkg/token"
+	"github.com/thangpham4/self-project/pkg/tokenx"
 	"github.com/thangpham4/self-project/pkg/utils"
 )
 
@@ -42,7 +42,7 @@ func ExtractUserMetaDataFromRequest(r *http.Request) interface{} {
 	customerID := utils.Coalesce(customerIDFromToken, customerIDFromQuery, "").(string)
 
 	// generate token for debug
-	token := tokens.NewToken("", customerID)
+	token := tokenx.NewToken("", customerID)
 	newToken, err := token.GenerateToken()
 	if err != nil {
 		logger.Error(err, "cannot generate new token", "customer_id", customerID)
@@ -59,7 +59,7 @@ func ExtractUserMetaDataFromRequest(r *http.Request) interface{} {
 }
 
 func extractValueFromToken(s string) (string, error) {
-	token := tokens.NewToken(s, "")
+	token := tokenx.NewToken(s, "")
 
 	value, err := token.ExtractTokenKey()
 	if err != nil {

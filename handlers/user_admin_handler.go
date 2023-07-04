@@ -9,7 +9,7 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
-	tokens "github.com/thangpham4/self-project/pkg/token"
+	"github.com/thangpham4/self-project/pkg/tokenx"
 	"github.com/thangpham4/self-project/services"
 )
 
@@ -90,7 +90,7 @@ func (u *UserAdminHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	tokenStruct := tokens.NewToken("", email)
+	tokenStruct := tokenx.NewToken("", email)
 	token, err := tokenStruct.GenerateToken()
 	if err != nil {
 		u.logger.Error(err, "cannot generate token", "email", email)

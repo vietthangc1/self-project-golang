@@ -6,7 +6,7 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
-	password_pkg "github.com/thangpham4/self-project/pkg/password"
+	"github.com/thangpham4/self-project/pkg/passwordx"
 	"github.com/thangpham4/self-project/repo"
 )
 
@@ -25,7 +25,7 @@ func NewUserAdminService(
 }
 
 func (u *UserAdminService) Create(ctx context.Context, user entities.UserAdmin) (entities.UserAdmin, error) {
-	inputPassword := &password_pkg.Password{
+	inputPassword := &passwordx.Password{
 		Password: user.Password,
 	}
 	hasedPassword, err := inputPassword.HasingPassword()
@@ -50,7 +50,7 @@ func (u *UserAdminService) Login(ctx context.Context, email, password string) (e
 		u.logger.Error(err, "not found user", "email", email)
 		return entities.UserAdmin{}, err
 	}
-	inputPassword := &password_pkg.Password{
+	inputPassword := &passwordx.Password{
 		Password: password,
 	}
 	ok := inputPassword.CheckPassword(userInfo.Password)
