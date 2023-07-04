@@ -49,11 +49,6 @@ func (h *ReadModelDataHandler) ReadModelData(
 	ctx.IndentedJSON(http.StatusOK, out)
 }
 
-type ProductScoreModelForCustomerResponse struct {
-	ModelScore *entities.ModelDataMaster `json:"model_score"`
-	ModelDebug *entities.ModelInfo       `json:"model_debug"`
-}
-
 func (h *ReadModelDataHandler) ProductScoreModelForCustomer(
 	ctx *gin.Context,
 ) {
@@ -84,11 +79,8 @@ func (h *ReadModelDataHandler) ProductScoreModelForCustomer(
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	resp := &ProductScoreModelForCustomerResponse{
-		ModelScore: modelScore,
-		ModelDebug: &entities.ModelInfo{
-			Code: model.Code,
-		},
-	}
-	ctx.IndentedJSON(http.StatusOK, resp)
+	ctx.IndentedJSON(http.StatusOK, gin.H{
+		"model_score": modelScore,
+		"model_debug": model,
+	})
 }

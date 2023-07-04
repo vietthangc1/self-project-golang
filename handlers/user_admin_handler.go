@@ -9,6 +9,7 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
+	tokens "github.com/thangpham4/self-project/pkg/token"
 	"github.com/thangpham4/self-project/services"
 )
 
@@ -68,4 +69,36 @@ func (u *UserAdminHandler) Get(ctx *gin.Context) {
 		return
 	}
 	ctx.IndentedJSON(http.StatusFound, user)
+}
+
+func (u *UserAdminHandler) Login(ctx *gin.Context) {
+	var user entities.UserAdmin
+	err := json.NewDecoder(ctx.Request.Body).Decode(&user)
+	if err != nil {
+		u.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	email := user.Email
+	password := user.Password
+
+	user, err = u.userService.Login(ctx, email, password)
+	if err != nil {
+		u.logger.Error(err, "wrong email password", "email", email, "password", password)
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	tokenStruct := tokens.NewToken("", email)
+	token, err := tokenStruct.GenerateToken()
+	if err != nil {
+		u.logger.Error(err, "cannot generate token", "email", email)
+		token = ""
+	}
+
+	ctx.IndentedJSON(http.StatusFound, gin.H{
+		"email": email,
+		"token": token,
+	})
 }

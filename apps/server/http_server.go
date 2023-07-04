@@ -24,6 +24,7 @@ func NewHTTPserver(
 
 	s.POST("/user/create", userHandler.Create)
 	s.GET("/user/get/:id", userHandler.Get)
+	s.POST("/login", userHandler.Login)
 
 	s.POST("/product/create", productHandler.Create)
 	s.GET("/product/get/:id", productHandler.Get)
