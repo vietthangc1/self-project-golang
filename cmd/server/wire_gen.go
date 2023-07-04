@@ -56,7 +56,8 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	}
 	sheetService := sheets.NewSheetService(service)
 	readModelSheet := sheet.NewReadModelSheet(sheetService)
-	readModelDataService := services.NewReadModelDataService(readModelSheet)
+	readModelDataCache := cache.NewReadModelDataCache(readModelSheet, kvRedisImpl)
+	readModelDataService := services.NewReadModelDataService(readModelDataCache)
 	modelInfoMysql := mysql.NewModelInfoMysql(db)
 	modelInfoService := services.NewModelInfoService(modelInfoMysql)
 	readModelDataHandler := handlers.NewReadModelDataHandler(readModelDataService, modelInfoService)
