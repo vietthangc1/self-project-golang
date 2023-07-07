@@ -61,26 +61,14 @@ func (h *ReadModelDataHandler) ProductScoreModelForCustomer(
 	params := ctx.Request.URL.Query()
 	modelCode := params.Get("model")
 
-	model, err := h.modelInfoService.GetByCode(ctx, modelCode)
+	modelScore, modelInfo, err := h.modelService.ReadModelDataForCustomer(ctx, modelCode, customerID)
 	if err != nil {
-		h.logger.Error(err, "error in getting model", "code", "code")
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if model.Source == nil {
-		h.logger.Error(commonx.ErrInsufficientDataGet, "model have no source", "model", model)
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": commonx.ErrInsufficientDataGet})
-	}
-
-	modelScore, err := h.modelService.ReadModelDataForCustomer(ctx, model.Source.SheetID, model.Source.SheetName, customerID)
-	if err != nil {
-		h.logger.Error(err, "error in getting model score for customer", "model", model, "customer_id", customerID)
+		h.logger.Error(err, "error in getting model score for customer", "model_code", modelCode, "customer_id", customerID)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
 	ctx.IndentedJSON(http.StatusOK, gin.H{
 		"model_score": modelScore,
-		"model_debug": model,
+		"model_debug": modelInfo,
 	})
 }

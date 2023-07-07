@@ -9,16 +9,19 @@ import (
 )
 
 type ReadModelDataService struct {
-	modelRepo repo.ReadModelDataRepo
-	logger    logger.Logger
+	modelRepo     repo.ReadModelDataRepo
+	modelInfoRepo repo.ModelInfoRepo
+	logger        logger.Logger
 }
 
 func NewReadModelDataService(
 	modelRepo repo.ReadModelDataRepo,
+	modelInfoRepo repo.ModelInfoRepo,
 ) *ReadModelDataService {
 	return &ReadModelDataService{
-		modelRepo: modelRepo,
-		logger:    logger.Factory("ReadModelDataService"),
+		modelRepo:     modelRepo,
+		modelInfoRepo: modelInfoRepo,
+		logger:        logger.Factory("ReadModelDataService"),
 	}
 }
 
@@ -31,12 +34,26 @@ func (s *ReadModelDataService) ReadModelData(
 
 func (s *ReadModelDataService) ReadModelDataForCustomer(
 	ctx context.Context,
-	sheetID, sheetName, customerID string,
-) (*entities.ModelDataMaster, error) {
+	modelCode, customerID string,
+) (*entities.ModelDataMaster, *entities.ModelInfo, error) {
+	model, err := s.modelInfoRepo.GetByCode(ctx, modelCode)
+	if err != nil {
+		s.logger.Error(err, "error in getting model", "code", "code")
+		return nil, nil, err
+	}
+
+	err = model.Validate()
+	if err != nil {
+		s.logger.Error(err, "validate model fail", "code", modelCode)
+		return nil, model, err
+	}
+
+	sheetID, sheetName := model.Source.SheetID, model.Source.SheetName
+
 	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
 	if err != nil {
 		s.logger.Error(err, "error in reading model data", "sheet_id", sheetID, "sheet_name", sheetName)
-		return nil, err
+		return nil, model, err
 	}
 
 	var (
@@ -54,5 +71,5 @@ func (s *ReadModelDataService) ReadModelDataForCustomer(
 		)
 		modelDataCustomer = modelData[customerIDDefault]
 	}
-	return modelDataCustomer, nil
+	return modelDataCustomer, model, nil
 }
