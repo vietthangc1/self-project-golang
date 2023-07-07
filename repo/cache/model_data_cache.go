@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	modelDataCacheKeyPrefix                        = "model_data_cache_key_"
-	modelCacheTTL                                  = 24 * time.Hour
-	_                       repo.ReadModelDataRepo = &ReadModelDataCache{}
+	modelDataCacheKeyPrefix                                 = "model_data_cache_key_"
+	modelDataTransformCacheKeyPrefix                        = "model_data_transform_cache_key_"
+	modelCacheTTL                                           = 24 * time.Hour
+	_                                repo.ReadModelDataRepo = &ReadModelDataCache{}
 )
 
 type ReadModelDataCache struct {
@@ -60,6 +61,28 @@ func (c *ReadModelDataCache) ReadModelData(
 	return modelData, nil
 }
 
+func (c *ReadModelDataCache) ReadModelDataTransform(
+	ctx context.Context,
+	sheetID, sheetName string,
+) (map[string]*entities.ModelDataMaster, error) {
+	transformCacheKey := fmt.Sprintf("%s%s-%s", modelDataTransformCacheKeyPrefix, sheetID, sheetName)
+
+	buf, err := c.kvRedis.Get(ctx, transformCacheKey)
+	if err != nil {
+		if !errors.Is(err, commonx.ErrKeyNotFound) {
+			c.logger.Error(err, "error in get model data transform cache", "sheet_id", sheetID, "sheet_name", sheetName)
+		}
+		return c.GetandSetTransform(ctx, sheetID, sheetName)
+	}
+	var modelData map[string]*entities.ModelDataMaster
+	err = json.Unmarshal(buf, &modelData)
+	if err != nil {
+		c.logger.Error(err, "unmarshaling cache product", "key", transformCacheKey)
+		return nil, err
+	}
+	return modelData, nil
+}
+
 func (c *ReadModelDataCache) GetandSet(ctx context.Context, sheetID, sheetName string) ([]*entities.ModelDataMaster, error) {
 	cacheKey := fmt.Sprintf("%s%s-%s", modelDataCacheKeyPrefix, sheetID, sheetName)
 	metaLog := []interface{}{"sheet_id", sheetID, "sheet_name", sheetName}
@@ -79,6 +102,32 @@ func (c *ReadModelDataCache) GetandSet(ctx context.Context, sheetID, sheetName s
 	err = c.kvRedis.Set(ctx, cacheKey, buf, modelCacheTTL)
 	if err != nil {
 		c.logger.Error(err, "error in saving model data to cache", metaLog)
+	}
+	return modelData, nil
+}
+
+func (c *ReadModelDataCache) GetandSetTransform(
+	ctx context.Context,
+	sheetID, sheetName string,
+) (map[string]*entities.ModelDataMaster, error) {
+	transformCacheKey := fmt.Sprintf("%s%s-%s", modelDataTransformCacheKeyPrefix, sheetID, sheetName)
+	metaLog := []interface{}{"sheet_id", sheetID, "sheet_name", sheetName}
+
+	modelData, err := c.modelSheet.ReadModelDataTransform(ctx, sheetID, sheetName)
+	if err != nil {
+		c.logger.Error(err, "error in getting model data transform from sheet", metaLog)
+		return nil, err
+	}
+
+	buf, err := json.Marshal(modelData)
+	if err != nil {
+		c.logger.Error(err, "err in buffering model data transform", metaLog)
+		return modelData, nil
+	}
+
+	err = c.kvRedis.Set(ctx, transformCacheKey, buf, modelCacheTTL)
+	if err != nil {
+		c.logger.Error(err, "error in saving model data transform to cache", metaLog)
 	}
 	return modelData, nil
 }

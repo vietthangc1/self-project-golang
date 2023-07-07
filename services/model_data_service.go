@@ -33,38 +33,26 @@ func (s *ReadModelDataService) ReadModelDataForCustomer(
 	ctx context.Context,
 	sheetID, sheetName, customerID string,
 ) (*entities.ModelDataMaster, error) {
-	modelData, err := s.ReadModelData(ctx, sheetID, sheetName)
+	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
 	if err != nil {
 		s.logger.Error(err, "error in reading model data", "sheet_id", sheetID, "sheet_name", sheetName)
 		return nil, err
 	}
 
 	var (
-		modelForCustomer        *entities.ModelDataMaster
-		modelForCustomerDefault *entities.ModelDataMaster
-		isCustomerInModel       = false
-		customerIDDefault       = "-"
+		customerIDDefault = "-"
 	)
 
-	for _, modelMaster := range modelData {
-		if modelMaster.Key == customerID {
-			modelForCustomer = modelMaster
-			isCustomerInModel = true
-			break
-		}
-		if modelMaster.Key == customerIDDefault {
-			modelForCustomerDefault = modelMaster
-		}
-	}
-
-	if !isCustomerInModel {
+	var modelDataCustomer *entities.ModelDataMaster
+	modelDataCustomer, ok := modelData[customerID]
+	if !ok {
 		s.logger.Info(
 			"customer id not in pool model, return default data",
 			"customer_id", customerID,
 			"sheet_id", sheetID,
 			"sheet_name", sheetName,
 		)
-		return modelForCustomerDefault, nil
+		modelDataCustomer = modelData[customerIDDefault]
 	}
-	return modelForCustomer, nil
+	return modelDataCustomer, nil
 }

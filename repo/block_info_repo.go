@@ -8,6 +8,6 @@ import (
 
 type BlockInfoRepo interface {
 	Get(ctx context.Context, id uint) (*entities.BlockInfo, error)
-	GetByCode(ctx context.Context, code string) (*entities.BlockInfo, error)
+	GetByCode(ctx context.Context, code string) (*entities.BlockInfoTransform, error)
 	Create(ctx context.Context, block *entities.BlockInfo) (*entities.BlockInfo, error)
 }

@@ -90,6 +90,21 @@ func (r *ReadModelSheet) ReadModelData(
 	ctx context.Context,
 	sheetID, sheetName string,
 ) ([]*entities.ModelDataMaster, error) {
+	mapModel, err := r.ReadModelDataTransform(ctx, sheetID, sheetName)
+	if err != nil {
+		return nil, err
+	}
+	out := []*entities.ModelDataMaster{}
+	for _, v := range mapModel {
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+func (r *ReadModelSheet) ReadModelDataTransform(
+	ctx context.Context,
+	sheetID, sheetName string,
+) (map[string]*entities.ModelDataMaster, error) {
 	keyRaw, productIDRaw, scoreRaw, err := r.GetModelRawData(ctx, sheetID, sheetName)
 	if err != nil {
 		return nil, err
@@ -136,12 +151,7 @@ func (r *ReadModelSheet) ReadModelData(
 		}
 		keyInclude = append(keyInclude, key)
 	}
-
-	out := []*entities.ModelDataMaster{}
-	for _, v := range mapModel {
-		out = append(out, v)
-	}
-	return out, nil
+	return mapModel, nil
 }
 
 func stringInSlice(a string, list []string) bool {

@@ -30,6 +30,6 @@ func (s *BlockInfoService) GetByID(ctx context.Context, id uint) (*entities.Bloc
 	return s.blockInfoRepo.Get(ctx, id)
 }
 
-func (s *BlockInfoService) GetByCode(ctx context.Context, code string) (*entities.BlockInfo, error) {
+func (s *BlockInfoService) GetByCode(ctx context.Context, code string) (*entities.BlockInfoTransform, error) {
 	return s.blockInfoRepo.GetByCode(ctx, code)
 }

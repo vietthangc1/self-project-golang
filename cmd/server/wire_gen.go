@@ -65,6 +65,8 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	blockInfoMysql := mysql.NewBlockInfoMysql(db)
 	blockInfoService := services.NewBlockInfoService(blockInfoMysql)
 	blockInfoHandler := handlers.NewBlockInfoHanfler(blockInfoService)
-	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler)
+	blockDataService := services.NewBlockDataService(blockInfoMysql, readModelDataCache, modelInfoMysql, productInfoCache)
+	blockDataHandler := handlers.NewBlockDataHandler(blockDataService)
+	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler)
 	return engine, nil
 }

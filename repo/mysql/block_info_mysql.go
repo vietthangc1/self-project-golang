@@ -35,7 +35,18 @@ func (b *BlockInfoMysql) Get(ctx context.Context, id uint) (*entities.BlockInfo,
 	return block, nil
 }
 
-func (b *BlockInfoMysql) GetByCode(ctx context.Context, code string) (*entities.BlockInfo, error) {
+func (b *BlockInfoMysql) GetByCode(ctx context.Context, code string) (*entities.BlockInfoTransform, error) {
+	var block = &entities.BlockInfo{
+		Code: code,
+	}
+	err := b.db.WithContext(ctx).First(block).Error
+	if err != nil {
+		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot find block, code: %s", code))
+	}
+	return block.Transform(), nil
+}
+
+func (b *BlockInfoMysql) GetByCodeTransform(ctx context.Context, code string) (*entities.BlockInfo, error) {
 	var block = &entities.BlockInfo{
 		Code: code,
 	}

@@ -9,4 +9,5 @@ var Set = wire.NewSet(
 	NewReadModelDataService,
 	NewModelInfoService,
 	NewBlockInfoService,
+	NewBlockDataService,
 )

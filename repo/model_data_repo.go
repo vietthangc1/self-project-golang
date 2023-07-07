@@ -11,4 +11,8 @@ type ReadModelDataRepo interface {
 		ctx context.Context,
 		sheetID, sheetName string,
 	) ([]*entities.ModelDataMaster, error)
+	ReadModelDataTransform(
+		ctx context.Context,
+		sheetID, sheetName string,
+	) (map[string]*entities.ModelDataMaster, error)
 }
