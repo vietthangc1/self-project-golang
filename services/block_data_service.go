@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"sort"
 
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
@@ -32,7 +33,11 @@ func NewBlockDataService(
 	}
 }
 
-func (s *BlockDataService) GetBlockProducts(ctx context.Context, blockCode, customerID string) (*entities.BlockData, error) {
+func (s *BlockDataService) GetBlockProducts(
+	ctx context.Context,
+	blockCode, customerID string,
+	pageSize, beginCursor int32,
+) (*entities.BlockData, error) {
 	blockInfo, err := s.blockInfoRepo.GetByCode(ctx, blockCode)
 	if err != nil {
 		s.logger.Error(err, "not found block", "code", blockCode)
@@ -73,10 +78,24 @@ func (s *BlockDataService) GetBlockProducts(ctx context.Context, blockCode, cust
 		modelDataCustomer = modelData["-"]
 	}
 
+	productRank := modelDataCustomer.ProductRank
+	sort.Slice(productRank, func(i, j int) bool {
+		return productRank[i].Rank < productRank[j].Rank
+	})
+
 	productIDs := []uint{}
-	for _, productID := range modelDataCustomer.ProductRank {
+	for _, productID := range productRank {
 		productIDs = append(productIDs, uint(productID.ProductID))
 	}
+
+	var nextCursor int32 = 0
+	endCursor := beginCursor + pageSize
+	if int(endCursor) < len(productIDs) {
+		nextCursor = endCursor 
+	}
+
+	productIDs = productIDs[beginCursor:endCursor]
+
 	productsInfo, err := s.productInfoRepo.GetMany(ctx, productIDs)
 	if err != nil {
 		s.logger.Error(err, "cannot get products info")
@@ -89,10 +108,17 @@ func (s *BlockDataService) GetBlockProducts(ctx context.Context, blockCode, cust
 		},
 	}
 
+	config := &entities.BlockDataConfig{
+		BeginCursor: beginCursor,
+		PageSize:    pageSize,
+		NextCursor:  nextCursor,
+	}
+
 	return &entities.BlockData{
 		BlockCode:  blockCode,
 		ModelIDs:   modelIDs,
 		Data:       productsInfo,
 		ModelDebug: modelDebug,
+		Config:     config,
 	}, nil
 }

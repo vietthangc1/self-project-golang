@@ -91,23 +91,25 @@ func (u *ProductInfoCache) GetMany(ctx context.Context, ids []uint) ([]*entities
 	}
 
 	products := make([]*entities.ProductInfo, 0, len(bufs))
-	product := &entities.ProductInfo{}
 
 	for k, buf := range bufs {
+		var product entities.ProductInfo
 		err = json.Unmarshal(buf, &product)
 		if err != nil {
 			invalidKeys = append(invalidKeys, k)
 			u.logger.Error(err, "unmarshaling cache product")
 			continue
 		}
-		products = append(products, product)
+		products = append(products, &product)
 	}
 
-	productsQuery, err := u.GetManyandSetMany(ctx, invalidKeys)
-	if err != nil {
-		u.logger.Error(err, "cannot get more products from db")
+	if len(invalidKeys) > 0 {
+		productsQuery, err := u.GetManyandSetMany(ctx, invalidKeys)
+		if err != nil {
+			u.logger.Error(err, "cannot get more products from db")
+		}
+		products = append(products, productsQuery...)
 	}
-	products = append(products, productsQuery...)
 	return products, nil
 }
 
