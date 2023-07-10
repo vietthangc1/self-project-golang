@@ -2,11 +2,15 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"strconv"
 
+	"github.com/thangpham4/self-project/config"
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
+	"github.com/thangpham4/self-project/pkg/queryx"
 	"github.com/thangpham4/self-project/repo"
 )
 
@@ -33,11 +37,49 @@ func NewBlockDataService(
 	}
 }
 
+//nolint:funlen,nestif,gocyclo
 func (s *BlockDataService) GetBlockProducts(
 	ctx context.Context,
-	blockCode, customerID string,
+	pageToken, blockCode, customerID string,
 	pageSize, beginCursor int32,
 ) (*entities.BlockData, error) {
+	isUsePageToken := false
+	queryMap := make(map[string]string)
+	if pageToken != "" {
+		var err error
+		queryMap, err = queryx.ReadMoreLink(pageToken)
+		if err != nil {
+			s.logger.Error(err, "error in read page token")
+		} else {
+			s.logger.V(logger.LogDebugLevel).Info("page token query", "query_map", queryMap)
+			isUsePageToken = true
+		}
+	}
+
+	if isUsePageToken {
+		newBlockCode, ok := queryMap["block_code"]
+		if ok {
+			blockCode = newBlockCode
+		}
+		newCustomerID, ok := queryMap["customer_id"]
+		if ok {
+			customerID = newCustomerID
+		}
+		newBeginCursor, ok := queryMap["begin_cursor"]
+		if ok {
+			newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
+			if err == nil {
+				beginCursor = int32(newBeginCursor)
+			}
+		}
+		newPageSize, ok := queryMap["page_size"]
+		if ok {
+			newPageSize, err := strconv.ParseInt(newPageSize, 10, 32)
+			if err == nil {
+				pageSize = int32(newPageSize)
+			}
+		}
+	}
 	blockInfo, err := s.blockInfoRepo.GetByCode(ctx, blockCode)
 	if err != nil {
 		s.logger.Error(err, "not found block", "code", blockCode)
@@ -108,37 +150,39 @@ func (s *BlockDataService) GetBlockProducts(
 		},
 	}
 
-	config := &entities.BlockDataConfig{
+	blockDataConfig := &entities.BlockDataConfig{
 		BeginCursor: beginCursor,
 		PageSize:    pageSize,
 		BlockCode:   blockCode,
 	}
 
+	resp := &entities.BlockData{
+		BlockCode:  blockCode,
+		ModelIDs:   modelIDs,
+		Data:       productsInfo,
+		ModelDebug: modelDebug,
+		Config:     blockDataConfig,
+	}
+
 	if nextCursor == 0 {
-		return &entities.BlockData{
-			BlockCode:  blockCode,
-			ModelIDs:   modelIDs,
-			Data:       productsInfo,
-			ModelDebug: modelDebug,
-			Config:     config,
-		}, nil
+		return resp, nil
 	}
 
-	moreLinkConfig := &entities.BlockDataMoreLinkConfig{
-		BeginCursor: nextCursor,
-		PageSize:    pageSize,
-		BlockCode:   blockCode,
-	}
+	moreLinkMap := make(map[string]string)
+	moreLinkMap["begin_cursor"] = fmt.Sprintf("%d", nextCursor)
+	moreLinkMap["page_size"] = fmt.Sprintf("%d", pageSize)
+	moreLinkMap["block_code"] = blockCode
+
 	if customerID != "-" {
-		moreLinkConfig.CustomerID = customerID
+		moreLinkMap["customer_id"] = customerID
 	}
 
-	return &entities.BlockData{
-		BlockCode:      blockCode,
-		ModelIDs:       modelIDs,
-		Data:           productsInfo,
-		ModelDebug:     modelDebug,
-		Config:         config,
-		MoreLinkConfig: moreLinkConfig,
-	}, nil
+	moreLinkToken, _ := queryx.GenerateMoreLink(moreLinkMap)
+	moreLinkURL := fmt.Sprintf("%s/data?%s", config.Domain, moreLinkToken)
+	moreLink := &entities.BlockDataMoreLink{
+		Config: moreLinkMap,
+		URL:    moreLinkURL,
+	}
+	resp.MoreLink = moreLink
+	return resp, nil
 }

@@ -43,12 +43,12 @@ func (b *BlockInfo) Transform() *BlockInfoTransform {
 }
 
 type BlockData struct {
-	BlockCode      string                   `json:"block_code,omitempty"`
-	ModelIDs       []int32                  `json:"model_ids,omitempty"`
-	Data           []*ProductInfo           `json:"data,omitempty"`
-	ModelDebug     *ModelDebug              `json:"model_debug,omitempty"`
-	Config         *BlockDataConfig         `json:"config,omitempty"`
-	MoreLinkConfig *BlockDataMoreLinkConfig `json:"more_link_config,omitempty"`
+	BlockCode  string             `json:"block_code,omitempty"`
+	ModelIDs   []int32            `json:"model_ids,omitempty"`
+	Data       []*ProductInfo     `json:"data,omitempty"`
+	ModelDebug *ModelDebug        `json:"model_debug,omitempty"`
+	Config     *BlockDataConfig   `json:"config,omitempty"`
+	MoreLink   *BlockDataMoreLink `json:"more_link,omitempty"`
 }
 
 type BlockDataConfig struct {
@@ -57,12 +57,9 @@ type BlockDataConfig struct {
 	BlockCode   string `json:"block_code,omitempty"`
 }
 
-type BlockDataMoreLinkConfig struct {
-	BeginCursor int32  `json:"begin_cursor,omitempty"`
-	PageSize    int32  `json:"page_size,omitempty"`
-	URL         string `json:"url,omitempty"`
-	BlockCode   string `json:"block_code,omitempty"`
-	CustomerID  string `json:"customer_id,omitempty"`
+type BlockDataMoreLink struct {
+	URL    string            `json:"url,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 }
 
 type ModelDebug struct {

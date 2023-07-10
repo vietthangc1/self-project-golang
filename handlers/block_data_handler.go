@@ -39,6 +39,7 @@ func (h *BlockDataHandler) GetData(ctx *gin.Context) {
 
 	params := ctx.Request.URL.Query()
 	blockCode := params.Get("block_code")
+	pageToken := params.Get("page_token")
 
 	pageSize := defaultPageSize
 	if params.Get("page_size") != "" {
@@ -68,7 +69,7 @@ func (h *BlockDataHandler) GetData(ctx *gin.Context) {
 		"begin_cursor", beginCursor,
 	)
 
-	resp, err := h.blockDataService.GetBlockProducts(ctx, blockCode, customerID, pageSize, beginCursor)
+	resp, err := h.blockDataService.GetBlockProducts(ctx, pageToken, blockCode, customerID, pageSize, beginCursor)
 	if err != nil {
 		h.logger.Error(err, "error in get block product", "block_code", blockCode, "customer_id", customerID)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
