@@ -11,61 +11,38 @@ import (
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/pkg/queryx"
-	"github.com/thangpham4/self-project/repo"
 )
 
 type BlockDataService struct {
-	blockInfoRepo   repo.BlockInfoRepo
-	modelRepo       repo.ReadModelDataRepo
-	modelInfoRepo   repo.ModelInfoRepo
-	productInfoRepo repo.ProductInfoRepo
-	logger          logger.Logger
+	blockInfoService   *BlockInfoService
+	modelService       *ReadModelDataService
+	modelInfoService   *ModelInfoService
+	productInfoService *ProductInfoService
+	logger             logger.Logger
 }
 
 func NewBlockDataService(
-	blockInfoRepo repo.BlockInfoRepo,
-	modelRepo repo.ReadModelDataRepo,
-	modelInfoRepo repo.ModelInfoRepo,
-	productInfoRepo repo.ProductInfoRepo,
+	blockInfoService *BlockInfoService,
+	modelService *ReadModelDataService,
+	modelInfoService *ModelInfoService,
+	productInfoService *ProductInfoService,
 ) *BlockDataService {
 	return &BlockDataService{
-		blockInfoRepo:   blockInfoRepo,
-		modelRepo:       modelRepo,
-		modelInfoRepo:   modelInfoRepo,
-		productInfoRepo: productInfoRepo,
-		logger:          logger.Factory("BlockDataService"),
+		blockInfoService:   blockInfoService,
+		modelService:       modelService,
+		modelInfoService:   modelInfoService,
+		productInfoService: productInfoService,
+		logger:             logger.Factory("BlockDataService"),
 	}
 }
 
-//nolint:funlen,gocyclo
-func (s *BlockDataService) GetBlockProducts(
+func (s *BlockDataService) GetModelsByBlockCode(
 	ctx context.Context,
-	pageToken, blockCode, customerID string,
-	pageSize, beginCursor int32,
-) (*entities.BlockData, error) {
-	isUsePageToken := false
-	queryMap := make(map[string]string)
-	if pageToken != "" {
-		var err error
-		queryMap, err = queryx.ReadMoreLink(pageToken)
-		if err != nil {
-			s.logger.Error(err, "error in read page token")
-		} else {
-			s.logger.V(logger.LogDebugLevel).Info("page token query", "query_map", queryMap)
-			isUsePageToken = true
-		}
-	}
+	blockCode string,
+) ([]*entities.ModelInfo, error) {
+	models := []*entities.ModelInfo{}
 
-	if isUsePageToken {
-		newBeginCursor, ok := queryMap["begin_cursor"]
-		if ok {
-			newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
-			if err == nil {
-				beginCursor = int32(newBeginCursor)
-			}
-		}
-	}
-	blockInfo, err := s.blockInfoRepo.GetByCode(ctx, blockCode)
+	blockInfo, err := s.blockInfoService.GetByCode(ctx, blockCode)
 	if err != nil {
 		s.logger.Error(err, "not found block", "code", blockCode)
 		return nil, err
@@ -77,32 +54,63 @@ func (s *BlockDataService) GetBlockProducts(
 		return nil, commonx.ErrInsufficientDataGet
 	}
 
-	modelInfo, err := s.modelInfoRepo.GetByID(ctx, uint(modelIDs[0]))
-	if err != nil {
-		s.logger.Error(err, "not found model", "id", modelIDs[0])
+	for _, modelID := range modelIDs {
+		modelInfo, err2 := s.modelInfoService.GetByID(ctx, uint(modelID))
+		if err2 != nil {
+			s.logger.Error(err2, "not found model", "id", modelIDs[0])
+		}
+		models = append(models, modelInfo)
+	}
+
+	if len(models) == 0 {
+		s.logger.Error(commonx.ErrItemNotFound, "not found models", "model_ids", modelIDs)
 		return nil, err
 	}
+	return models, nil
+}
+
+//nolint:funlen,nestif
+func (s *BlockDataService) GetBlockProducts(
+	ctx context.Context,
+	pageToken, blockCode, customerID string,
+	pageSize, beginCursor int32,
+) (*entities.BlockData, error) {
+	if pageToken != "" {
+		var err error
+		queryMap, err := queryx.ReadMoreLink(pageToken)
+		if err != nil {
+			s.logger.Error(err, "error in read page token")
+		} else {
+			s.logger.V(logger.LogDebugLevel).Info("page token query", "query_map", queryMap)
+			newBeginCursor, ok := queryMap["begin_cursor"]
+			if ok {
+				newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
+				if err == nil {
+					beginCursor = int32(newBeginCursor)
+				}
+			}
+		}
+	}
+
+	models, err := s.GetModelsByBlockCode(ctx, blockCode)
+	if err != nil {
+		s.logger.Error(err, "err in get models", "block_code", blockCode)
+	}
+	modelInfo := models[0]
 	err = modelInfo.Validate()
 	if err != nil {
 		s.logger.Error(err, "model validate fail")
 	}
 
-	sheetID, sheetName := modelInfo.Source.SheetID, modelInfo.Source.SheetName
-	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
-	if err != nil {
-		s.logger.Error(err, "get model data error", "sheet_name", sheetName, "sheet_id", sheetID)
-		return nil, err
+	modelIDs := []int32{}
+	for _, model := range models {
+		modelIDs = append(modelIDs, int32(model.ID))
 	}
 
-	var modelDataCustomer *entities.ModelDataMaster
-	modelDataCustomer, ok := modelData[customerID]
-	if !ok {
-		s.logger.Info(
-			"customer id not in pool model, return default data",
-			"customer_id", customerID,
-			"model_code", modelInfo.Code,
-		)
-		modelDataCustomer = modelData["-"]
+	modelDataCustomer, err := s.modelService.ReadModelDataForCustomerFromEntity(ctx, modelInfo, customerID)
+	if err != nil {
+		s.logger.Error(err, "error in read model data for customer")
+		return nil, err
 	}
 
 	productRank := modelDataCustomer.ProductRank
@@ -123,7 +131,7 @@ func (s *BlockDataService) GetBlockProducts(
 
 	productIDs = productIDs[beginCursor:endCursor]
 
-	productsInfo, err := s.productInfoRepo.GetMany(ctx, productIDs)
+	productsInfo, err := s.productInfoService.GetMany(ctx, productIDs)
 	if err != nil {
 		s.logger.Error(err, "cannot get products info")
 		return nil, err
@@ -153,19 +161,19 @@ func (s *BlockDataService) GetBlockProducts(
 		return resp, nil
 	}
 
+	moreLinkToken, _ := queryx.GenerateMoreLink(map[string]string{
+		"begin_cursor": fmt.Sprintf("%d", nextCursor),
+	})
+
 	moreLinkMap := make(map[string]string)
 	moreLinkMap["page_size"] = fmt.Sprintf("%d", pageSize)
 	moreLinkMap["block_code"] = blockCode
-
 	if customerID != "-" {
 		moreLinkMap["customer_id"] = customerID
 	}
 	queryMapStr := queryx.BuildFromMap(moreLinkMap)
-
-	moreLinkMap["begin_cursor"] = fmt.Sprintf("%d", nextCursor)
-	moreLinkToken, _ := queryx.GenerateMoreLink(moreLinkMap)
-
 	moreLinkURL := fmt.Sprintf("%s/data?%s&%s", config.Domain, queryMapStr, moreLinkToken)
+
 	moreLink := &entities.BlockDataMoreLink{
 		Config: moreLinkMap,
 		URL:    moreLinkURL,

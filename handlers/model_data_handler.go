@@ -61,7 +61,7 @@ func (h *ReadModelDataHandler) ProductScoreModelForCustomer(
 	params := ctx.Request.URL.Query()
 	modelCode := params.Get("model")
 
-	modelScore, modelInfo, err := h.modelService.ReadModelDataForCustomer(ctx, modelCode, customerID)
+	modelScore, modelInfo, err := h.modelService.ReadModelDataForCustomerFromCode(ctx, modelCode, customerID)
 	if err != nil {
 		h.logger.Error(err, "error in getting model score for customer", "model_code", modelCode, "customer_id", customerID)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
