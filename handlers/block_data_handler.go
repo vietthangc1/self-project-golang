@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
+	"github.com/thangpham4/self-project/pkg/queryx"
 	"github.com/thangpham4/self-project/services"
 )
 
@@ -42,23 +42,15 @@ func (h *BlockDataHandler) GetData(ctx *gin.Context) {
 	pageToken := params.Get("page_token")
 
 	pageSize := defaultPageSize
-	if params.Get("page_size") != "" {
-		pageSizeInt, err := strconv.ParseInt(params.Get("page_size"), 10, 32)
-		if err != nil {
-			h.logger.Error(commonx.ErrInsufficientDataGet, "invalid page size", "page_size", pageSize)
-		} else {
-			pageSize = int32(pageSizeInt)
-		}
+	err := queryx.ReadAndParseIntVariable(params, "page_size", &pageSize)
+	if err != nil {
+		h.logger.Error(err, "error in parse int query values")
 	}
 
 	beginCursor := defaultBeginCursor
-	if params.Get("begin_cursor") != "" {
-		beginCursorInt, err := strconv.ParseInt(params.Get("begin_cursor"), 10, 32)
-		if err != nil {
-			h.logger.Error(commonx.ErrInsufficientDataGet, "invalid begin cursor", "begin_cursor", beginCursor)
-		} else {
-			beginCursor = int32(beginCursorInt)
-		}
+	err = queryx.ReadAndParseIntVariable(params, "begin_cursor", &beginCursor)
+	if err != nil {
+		h.logger.Error(err, "error in parse int query values")
 	}
 
 	h.logger.V(logger.LogDebugLevel).Info(
