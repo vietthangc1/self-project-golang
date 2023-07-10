@@ -37,7 +37,7 @@ func NewBlockDataService(
 	}
 }
 
-//nolint:funlen,nestif,gocyclo
+//nolint:funlen,gocyclo
 func (s *BlockDataService) GetBlockProducts(
 	ctx context.Context,
 	pageToken, blockCode, customerID string,
@@ -57,26 +57,11 @@ func (s *BlockDataService) GetBlockProducts(
 	}
 
 	if isUsePageToken {
-		newBlockCode, ok := queryMap["block_code"]
-		if ok {
-			blockCode = newBlockCode
-		}
-		newCustomerID, ok := queryMap["customer_id"]
-		if ok {
-			customerID = newCustomerID
-		}
 		newBeginCursor, ok := queryMap["begin_cursor"]
 		if ok {
 			newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
 			if err == nil {
 				beginCursor = int32(newBeginCursor)
-			}
-		}
-		newPageSize, ok := queryMap["page_size"]
-		if ok {
-			newPageSize, err := strconv.ParseInt(newPageSize, 10, 32)
-			if err == nil {
-				pageSize = int32(newPageSize)
 			}
 		}
 	}
@@ -169,16 +154,18 @@ func (s *BlockDataService) GetBlockProducts(
 	}
 
 	moreLinkMap := make(map[string]string)
-	moreLinkMap["begin_cursor"] = fmt.Sprintf("%d", nextCursor)
 	moreLinkMap["page_size"] = fmt.Sprintf("%d", pageSize)
 	moreLinkMap["block_code"] = blockCode
 
 	if customerID != "-" {
 		moreLinkMap["customer_id"] = customerID
 	}
+	queryMapStr := queryx.BuildFromMap(moreLinkMap)
 
+	moreLinkMap["begin_cursor"] = fmt.Sprintf("%d", nextCursor)
 	moreLinkToken, _ := queryx.GenerateMoreLink(moreLinkMap)
-	moreLinkURL := fmt.Sprintf("%s/data?%s", config.Domain, moreLinkToken)
+
+	moreLinkURL := fmt.Sprintf("%s/data?%s&%s", config.Domain, queryMapStr, moreLinkToken)
 	moreLink := &entities.BlockDataMoreLink{
 		Config: moreLinkMap,
 		URL:    moreLinkURL,
