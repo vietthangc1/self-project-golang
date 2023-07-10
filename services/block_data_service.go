@@ -37,34 +37,12 @@ func NewBlockDataService(
 	}
 }
 
-//nolint:funlen,gocyclo
-func (s *BlockDataService) GetBlockProducts(
+func (s *BlockDataService) GetModelsByBlockCode(
 	ctx context.Context,
-	pageToken, blockCode, customerID string,
-	pageSize, beginCursor int32,
-) (*entities.BlockData, error) {
-	isUsePageToken := false
-	queryMap := make(map[string]string)
-	if pageToken != "" {
-		var err error
-		queryMap, err = queryx.ReadMoreLink(pageToken)
-		if err != nil {
-			s.logger.Error(err, "error in read page token")
-		} else {
-			s.logger.V(logger.LogDebugLevel).Info("page token query", "query_map", queryMap)
-			isUsePageToken = true
-		}
-	}
+	blockCode string,
+) ([]*entities.ModelInfo, error) {
+	models := []*entities.ModelInfo{}
 
-	if isUsePageToken {
-		newBeginCursor, ok := queryMap["begin_cursor"]
-		if ok {
-			newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
-			if err == nil {
-				beginCursor = int32(newBeginCursor)
-			}
-		}
-	}
 	blockInfo, err := s.blockInfoRepo.GetByCode(ctx, blockCode)
 	if err != nil {
 		s.logger.Error(err, "not found block", "code", blockCode)
@@ -77,14 +55,57 @@ func (s *BlockDataService) GetBlockProducts(
 		return nil, commonx.ErrInsufficientDataGet
 	}
 
-	modelInfo, err := s.modelInfoRepo.GetByID(ctx, uint(modelIDs[0]))
-	if err != nil {
-		s.logger.Error(err, "not found model", "id", modelIDs[0])
+	for _, modelID := range modelIDs {
+		modelInfo, err2 := s.modelInfoRepo.GetByID(ctx, uint(modelID))
+		if err2 != nil {
+			s.logger.Error(err2, "not found model", "id", modelIDs[0])
+		}
+		models = append(models, modelInfo)
+	}
+
+	if len(models) == 0 {
+		s.logger.Error(commonx.ErrItemNotFound, "not found models", "model_ids", modelIDs)
 		return nil, err
 	}
+	return models, nil
+}
+
+//nolint:funlen,nestif
+func (s *BlockDataService) GetBlockProducts(
+	ctx context.Context,
+	pageToken, blockCode, customerID string,
+	pageSize, beginCursor int32,
+) (*entities.BlockData, error) {
+	if pageToken != "" {
+		var err error
+		queryMap, err := queryx.ReadMoreLink(pageToken)
+		if err != nil {
+			s.logger.Error(err, "error in read page token")
+		} else {
+			s.logger.V(logger.LogDebugLevel).Info("page token query", "query_map", queryMap)
+			newBeginCursor, ok := queryMap["begin_cursor"]
+			if ok {
+				newBeginCursor, err := strconv.ParseInt(newBeginCursor, 10, 32)
+				if err == nil {
+					beginCursor = int32(newBeginCursor)
+				}
+			}
+		}
+	}
+
+	models, err := s.GetModelsByBlockCode(ctx, blockCode)
+	if err != nil {
+		s.logger.Error(err, "err in get models", "block_code", blockCode)
+	}
+	modelInfo := models[0]
 	err = modelInfo.Validate()
 	if err != nil {
 		s.logger.Error(err, "model validate fail")
+	}
+
+	modelIDs := []int32{}
+	for _, model := range models {
+		modelIDs = append(modelIDs, int32(model.ID))
 	}
 
 	sheetID, sheetName := modelInfo.Source.SheetID, modelInfo.Source.SheetName
