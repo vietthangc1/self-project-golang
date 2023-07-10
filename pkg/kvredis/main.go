@@ -54,8 +54,10 @@ func (r *KVRedisImpl) GetMany(ctx context.Context, keys []string) (map[string][]
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		r.logger.Error(err, "redis exec error")
-		return nil, nil, err
+		if !errors.Is(err, redis.Nil) {
+			r.logger.Error(err, "redis exec error")
+			return nil, nil, err
+		}
 	}
 
 	out := map[string][]byte{}
