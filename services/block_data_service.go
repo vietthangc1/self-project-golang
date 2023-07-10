@@ -91,7 +91,7 @@ func (s *BlockDataService) GetBlockProducts(
 	var nextCursor int32 = 0
 	endCursor := beginCursor + pageSize
 	if int(endCursor) < len(productIDs) {
-		nextCursor = endCursor 
+		nextCursor = endCursor
 	}
 
 	productIDs = productIDs[beginCursor:endCursor]
@@ -111,14 +111,34 @@ func (s *BlockDataService) GetBlockProducts(
 	config := &entities.BlockDataConfig{
 		BeginCursor: beginCursor,
 		PageSize:    pageSize,
-		NextCursor:  nextCursor,
+		BlockCode:   blockCode,
+	}
+
+	if nextCursor == 0 {
+		return &entities.BlockData{
+			BlockCode:  blockCode,
+			ModelIDs:   modelIDs,
+			Data:       productsInfo,
+			ModelDebug: modelDebug,
+			Config:     config,
+		}, nil
+	}
+
+	moreLinkConfig := &entities.BlockDataMoreLinkConfig{
+		BeginCursor: nextCursor,
+		PageSize:    pageSize,
+		BlockCode:   blockCode,
+	}
+	if customerID != "-" {
+		moreLinkConfig.CustomerID = customerID
 	}
 
 	return &entities.BlockData{
-		BlockCode:  blockCode,
-		ModelIDs:   modelIDs,
-		Data:       productsInfo,
-		ModelDebug: modelDebug,
-		Config:     config,
+		BlockCode:      blockCode,
+		ModelIDs:       modelIDs,
+		Data:           productsInfo,
+		ModelDebug:     modelDebug,
+		Config:         config,
+		MoreLinkConfig: moreLinkConfig,
 	}, nil
 }

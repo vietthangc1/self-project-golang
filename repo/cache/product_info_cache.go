@@ -74,13 +74,13 @@ func (u *ProductInfoCache) Get(ctx context.Context, id uint) (*entities.ProductI
 		}
 		return u.GetandSet(ctx, id)
 	}
-	var product *entities.ProductInfo
-	err = json.Unmarshal(buf, product)
+	var product entities.ProductInfo
+	err = json.Unmarshal(buf, &product)
 	if err != nil {
 		u.logger.Error(err, "unmarshaling cache product", "key", key)
 		return nil, err
 	}
-	return product, nil
+	return &product, nil
 }
 
 func (u *ProductInfoCache) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
