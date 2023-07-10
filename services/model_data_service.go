@@ -32,7 +32,32 @@ func (s *ReadModelDataService) ReadModelData(
 	return s.modelRepo.ReadModelData(ctx, sheetID, sheetName)
 }
 
-func (s *ReadModelDataService) ReadModelDataForCustomer(
+func (s *ReadModelDataService) ReadModelDataForCustomerFromEntity(
+	ctx context.Context,
+	modelInfo *entities.ModelInfo,
+	customerID string,
+) (*entities.ModelDataMaster, error) {
+	sheetID, sheetName := modelInfo.Source.SheetID, modelInfo.Source.SheetName
+	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
+	if err != nil {
+		s.logger.Error(err, "get model data error", "sheet_name", sheetName, "sheet_id", sheetID)
+		return nil, err
+	}
+
+	var modelDataCustomer *entities.ModelDataMaster
+	modelDataCustomer, ok := modelData[customerID]
+	if !ok {
+		s.logger.Info(
+			"customer id not in pool model, return default data",
+			"customer_id", customerID,
+			"model_code", modelInfo.Code,
+		)
+		modelDataCustomer = modelData["-"]
+	}
+	return modelDataCustomer, nil
+}
+
+func (s *ReadModelDataService) ReadModelDataForCustomerFromCode(
 	ctx context.Context,
 	modelCode, customerID string,
 ) (*entities.ModelDataMaster, *entities.ModelInfo, error) {
