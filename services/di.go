@@ -10,4 +10,5 @@ var Set = wire.NewSet(
 	NewModelInfoService,
 	NewBlockInfoService,
 	NewBlockDataService,
+	NewAuthorizationService,
 )

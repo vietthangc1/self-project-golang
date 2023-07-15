@@ -14,35 +14,30 @@ import (
 )
 
 type ProductInfoHandler struct {
-	productService   *services.ProductInfoService
-	userAdminService *services.UserAdminService
-	logger           logger.Logger
+	productService       *services.ProductInfoService
+	userAdminService     *services.UserAdminService
+	authorizationService *services.AuthorizationService
+	logger               logger.Logger
 }
 
 func NewProductInfoHandler(
 	productService *services.ProductInfoService,
 	userAdminService *services.UserAdminService,
+	authorizationService *services.AuthorizationService,
 ) *ProductInfoHandler {
 	return &ProductInfoHandler{
-		productService:   productService,
-		userAdminService: userAdminService,
-		logger:           logger.Factory("ProductInfoHandler"),
+		productService:       productService,
+		userAdminService:     userAdminService,
+		authorizationService: authorizationService,
+		logger:               logger.Factory("ProductInfoHandler"),
 	}
 }
 
 func (u *ProductInfoHandler) Create(ctx *gin.Context) {
-	userAdminContex := ctx.Value(commonx.UserAdminCtxKey)
-	if userAdminContex == nil {
-		u.logger.Error(commonx.ErrNotAuthenticated, "cannot find user info")
-		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
-		return
-	}
-	userAdminInfo := userAdminContex.(*entities.UserAdminData)
-	var user entities.UserAdmin
-	user, err := u.userAdminService.GetByEmail(ctx, userAdminInfo.Email)
+	user, err := u.authorizationService.VerifyMetaData(ctx)
 	if err != nil {
-		u.logger.Error(err, "cannot find this email", "email", userAdminInfo.Email)
-		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
 		return
 	}
 	if user.Role == 0 || user.Role == 1 {
@@ -105,20 +100,20 @@ func (u *ProductInfoHandler) GetMany(ctx *gin.Context) {
 		return
 	}
 
-	products := []*entities.ProductInfo{}
-	for _, idStr := range idArr {
-		idInt, err := strconv.ParseUint(idStr, 10, 64)
-		if err != nil {
-			u.logger.Error(err, "id input not type of int", "id", idInt)
-			continue
-		}
+	idsUint := []uint{}
 
-		product, err := u.productService.Get(ctx, uint(idInt))
-		if err != nil {
-			u.logger.Error(err, "error in getting product", "id", idInt)
+	for _, idStr := range idArr {
+		idInt, errParse := strconv.ParseUint(idStr, 10, 32)
+		if errParse != nil {
 			continue
 		}
-		products = append(products, product)
+		idUint := uint(idInt)
+		idsUint = append(idsUint, idUint)
+	}
+	products, err := u.productService.GetMany(ctx, idsUint)
+	if err != nil {
+		u.logger.Error(err, "error in getting products")
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 	ctx.IndentedJSON(http.StatusOK, products)
 }

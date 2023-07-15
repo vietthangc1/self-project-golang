@@ -36,7 +36,8 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	productInfoService := services.NewProductInfoService(productInfoCache)
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
-	productInfoHandler := handlers.NewProductInfoHandler(productInfoService, userAdminService)
+	authorizationService := services.NewAuthorizationService(userAdminService)
+	productInfoHandler := handlers.NewProductInfoHandler(productInfoService, userAdminService, authorizationService)
 	engine := productserver.NewHTTPserver(productInfoHandler)
 	return engine, nil
 }
