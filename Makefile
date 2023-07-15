@@ -23,6 +23,9 @@ $(DI_TARGETS):
 run-server:
 	go run ./cmd/server
 
+run-worker:
+	go run ./cmd/worker
+
 run-product:
 	go run ./cmd/product_server
 

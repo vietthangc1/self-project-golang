@@ -48,3 +48,12 @@ func (u *ProductInfoMysql) GetMany(ctx context.Context, ids []uint) ([]*entities
 	}
 	return products, nil
 }
+
+func (u *ProductInfoMysql) GetAll(ctx context.Context) ([]*entities.ProductInfo, error) {
+	var products []*entities.ProductInfo
+	err := u.db.WithContext(ctx).Find(&products).Error
+	if err != nil {
+		return nil, commonx.ErrorMessages(err, "cannot find all products")
+	}
+	return products, nil
+}

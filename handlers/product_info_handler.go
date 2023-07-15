@@ -65,18 +65,10 @@ func (u *ProductInfoHandler) Create(ctx *gin.Context) {
 }
 
 func (u *ProductInfoHandler) GetMany(ctx *gin.Context) {
-	userAdminContex := ctx.Value(commonx.UserAdminCtxKey)
-	if userAdminContex == nil {
-		u.logger.Error(commonx.ErrNotAuthenticated, "cannot find user info")
-		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
-		return
-	}
-	userAdminInfo := userAdminContex.(*entities.UserAdminData)
-	var user entities.UserAdmin
-	user, err := u.userAdminService.GetByEmail(ctx, userAdminInfo.Email)
+	user, err := u.authorizationService.VerifyMetaData(ctx)
 	if err != nil {
-		u.logger.Error(err, "cannot find this email", "email", userAdminInfo.Email)
-		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
 		return
 	}
 	if user.Role == 0 {
@@ -111,6 +103,26 @@ func (u *ProductInfoHandler) GetMany(ctx *gin.Context) {
 		idsUint = append(idsUint, idUint)
 	}
 	products, err := u.productService.GetMany(ctx, idsUint)
+	if err != nil {
+		u.logger.Error(err, "error in getting products")
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	ctx.IndentedJSON(http.StatusOK, products)
+}
+
+func (u *ProductInfoHandler) GetAll(ctx *gin.Context) {
+	user, err := u.authorizationService.VerifyMetaData(ctx)
+	if err != nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
+		return
+	}
+	if user.Role == 0 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to read product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+	products, err := u.productService.GetAll(ctx)
 	if err != nil {
 		u.logger.Error(err, "error in getting products")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})

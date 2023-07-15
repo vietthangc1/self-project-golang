@@ -33,3 +33,7 @@ func (u *ProductInfoService) Get(ctx context.Context, id uint) (*entities.Produc
 func (u *ProductInfoService) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
 	return u.productRepo.GetMany(ctx, ids)
 }
+
+func (u *ProductInfoService) GetAll(ctx context.Context) ([]*entities.ProductInfo, error) {
+	return u.productRepo.GetAll(ctx)
+}

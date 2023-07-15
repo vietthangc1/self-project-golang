@@ -9,8 +9,10 @@ require (
 	github.com/go-logr/zapr v1.2.4
 	github.com/google/wire v0.5.0
 	github.com/redis/go-redis/v9 v9.0.5
+	github.com/robfig/cron v1.2.0
 	go.mongodb.org/mongo-driver v1.12.0
 	go.uber.org/zap v1.24.0
+	golang.org/x/crypto v0.10.0
 	google.golang.org/api v0.129.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.1
@@ -58,7 +60,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/oauth2 v0.9.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
