@@ -10,7 +10,6 @@ import (
 func NewHTTPserver(
 	mockHandler *handlers.MockHandler,
 	userHandler *handlers.UserAdminHandler,
-	productHandler *handlers.ProductInfoHandler,
 	modelHandler *handlers.ReadModelDataHandler,
 	modelInfoHandler *handlers.ModelInfoHandler,
 	blockInfoHanfler *handlers.BlockInfoHandler,
@@ -27,9 +26,6 @@ func NewHTTPserver(
 	s.POST("/user/create", userHandler.Create)
 	s.GET("/user/get/:id", userHandler.Get)
 	s.POST("/login", userHandler.Login)
-
-	s.POST("/product/create", productHandler.Create)
-	s.GET("/product/get/:id", productHandler.Get)
 
 	s.POST("/model/sheet", modelHandler.ReadModelData)
 

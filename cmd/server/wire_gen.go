@@ -12,6 +12,7 @@ import (
 	"github.com/thangpham4/self-project/apps/server"
 	"github.com/thangpham4/self-project/handlers"
 	"github.com/thangpham4/self-project/infra"
+	"github.com/thangpham4/self-project/pkg/apix"
 	"github.com/thangpham4/self-project/pkg/kvredis"
 	"github.com/thangpham4/self-project/pkg/sheets"
 	"github.com/thangpham4/self-project/repo/cache"
@@ -46,10 +47,6 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
 	userAdminHandler := handlers.NewUserAdminHandler(userAdminService)
-	productInfoMysql := mysql.NewProductInfoMysql(db)
-	productInfoCache := cache.NewProductInfoCache(kvRedisImpl, productInfoMysql)
-	productInfoService := services.NewProductInfoService(productInfoCache)
-	productInfoHandler := handlers.NewProductInfoHandler(productInfoService, userAdminService)
 	service, err := infra.NewSheetService(contextContext)
 	if err != nil {
 		return nil, err
@@ -65,8 +62,9 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	blockInfoMysql := mysql.NewBlockInfoMysql(db)
 	blockInfoService := services.NewBlockInfoService(blockInfoMysql)
 	blockInfoHandler := handlers.NewBlockInfoHanfler(blockInfoService)
-	blockDataService := services.NewBlockDataService(blockInfoService, readModelDataService, modelInfoService, productInfoService)
+	apiCallerImpl := apix.NewAPICaller()
+	blockDataService := services.NewBlockDataService(blockInfoService, readModelDataService, modelInfoService, apiCallerImpl)
 	blockDataHandler := handlers.NewBlockDataHandler(blockDataService)
-	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler)
+	engine := server.NewHTTPserver(mockHandler, userAdminHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler)
 	return engine, nil
 }

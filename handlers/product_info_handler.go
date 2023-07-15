@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thangpham4/self-project/entities"
@@ -68,7 +69,7 @@ func (u *ProductInfoHandler) Create(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusCreated, productPointer)
 }
 
-func (u *ProductInfoHandler) Get(ctx *gin.Context) {
+func (u *ProductInfoHandler) GetMany(ctx *gin.Context) {
 	userAdminContex := ctx.Value(commonx.UserAdminCtxKey)
 	if userAdminContex == nil {
 		u.logger.Error(commonx.ErrNotAuthenticated, "cannot find user info")
@@ -89,7 +90,7 @@ func (u *ProductInfoHandler) Get(ctx *gin.Context) {
 		return
 	}
 
-	id, ok := ctx.Params.Get("id")
+	ids, ok := ctx.Params.Get("id")
 	if !ok {
 		const errString = "not found id in url params"
 		u.logger.Error(commonx.ErrorMessages(commonx.ErrNotFoundParams, errString), errString)
@@ -97,18 +98,27 @@ func (u *ProductInfoHandler) Get(ctx *gin.Context) {
 		return
 	}
 
-	idInt, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		u.logger.Error(err, "error in query id from url", "id", id)
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err})
+	idArr := strings.Split(ids, ",")
+	if len(idArr) == 0 {
+		u.logger.Error(commonx.ErrKeyNotFound, "insufficient ids input", "ids", ids)
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": commonx.ErrKeyNotFound})
 		return
 	}
 
-	product, err := u.productService.Get(ctx, uint(idInt))
-	if err != nil {
-		u.logger.Error(err, "error in getting product", "id", id)
-		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": err})
-		return
+	products := []*entities.ProductInfo{}
+	for _, idStr := range idArr {
+		idInt, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			u.logger.Error(err, "id input not type of int", "id", idInt)
+			continue
+		}
+
+		product, err := u.productService.Get(ctx, uint(idInt))
+		if err != nil {
+			u.logger.Error(err, "error in getting product", "id", idInt)
+			continue
+		}
+		products = append(products, product)
 	}
-	ctx.IndentedJSON(http.StatusOK, product)
+	ctx.IndentedJSON(http.StatusOK, products)
 }

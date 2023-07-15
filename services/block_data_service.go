@@ -2,37 +2,44 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/thangpham4/self-project/config"
 	"github.com/thangpham4/self-project/entities"
+	"github.com/thangpham4/self-project/pkg/apix"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/pkg/queryx"
 )
 
+var (
+	productsRoute = "/get/"
+)
+
 type BlockDataService struct {
-	blockInfoService   *BlockInfoService
-	modelService       *ReadModelDataService
-	modelInfoService   *ModelInfoService
-	productInfoService *ProductInfoService
-	logger             logger.Logger
+	blockInfoService *BlockInfoService
+	modelService     *ReadModelDataService
+	modelInfoService *ModelInfoService
+	apiClient        apix.APICaller
+	logger           logger.Logger
 }
 
 func NewBlockDataService(
 	blockInfoService *BlockInfoService,
 	modelService *ReadModelDataService,
 	modelInfoService *ModelInfoService,
-	productInfoService *ProductInfoService,
+	apiClient apix.APICaller,
 ) *BlockDataService {
 	return &BlockDataService{
-		blockInfoService:   blockInfoService,
-		modelService:       modelService,
-		modelInfoService:   modelInfoService,
-		productInfoService: productInfoService,
-		logger:             logger.Factory("BlockDataService"),
+		blockInfoService: blockInfoService,
+		modelService:     modelService,
+		modelInfoService: modelInfoService,
+		apiClient:        apiClient,
+		logger:           logger.Factory("BlockDataService"),
 	}
 }
 
@@ -131,7 +138,17 @@ func (s *BlockDataService) GetBlockProducts(
 
 	productIDs = productIDs[beginCursor:endCursor]
 
-	productsInfo, err := s.productInfoService.GetMany(ctx, productIDs)
+	productIDsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(productIDs)), ","), "[]")
+	productURI := fmt.Sprintf("http://%s%s%s", config.ProductAPI, productsRoute, productIDsStr)
+
+	resp, err := s.apiClient.Get(ctx, productURI, nil)
+	if err != nil {
+		s.logger.Error(err, "cannot get products info")
+		return nil, err
+	}
+
+	var productsInfo []*entities.ProductInfo
+	err = json.Unmarshal(resp, &productsInfo)
 	if err != nil {
 		s.logger.Error(err, "cannot get products info")
 		return nil, err
@@ -149,7 +166,7 @@ func (s *BlockDataService) GetBlockProducts(
 		BlockCode:   blockCode,
 	}
 
-	resp := &entities.BlockData{
+	out := &entities.BlockData{
 		BlockCode:  blockCode,
 		ModelIDs:   modelIDs,
 		Data:       productsInfo,
@@ -158,7 +175,7 @@ func (s *BlockDataService) GetBlockProducts(
 	}
 
 	if nextCursor == 0 {
-		return resp, nil
+		return out, nil
 	}
 
 	moreLinkToken, _ := queryx.GenerateMoreLink(map[string]string{
@@ -178,6 +195,6 @@ func (s *BlockDataService) GetBlockProducts(
 		Config: moreLinkMap,
 		URL:    moreLinkURL,
 	}
-	resp.MoreLink = moreLink
-	return resp, nil
+	out.MoreLink = moreLink
+	return out, nil
 }

@@ -15,7 +15,7 @@ func NewHTTPserver(
 	s.Use(middlewares.ByPassMiddlewareUserAdmin())
 
 	s.POST("/create", productHandler.Create)
-	s.GET("/get/:id", productHandler.Get)
+	s.GET("/get/:id", productHandler.GetMany)
 
 	return s
 }
