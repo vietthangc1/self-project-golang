@@ -14,8 +14,9 @@ func main() {
 		l.Error(err, "Build Server failed!")
 		panic(err.Error())
 	}
-	go func() {
-		err := server.Start(ctx)
-		logger.Error(err, "error when starting server")
-	}()
+	err = server.Start(ctx)
+	defer server.Stop()
+	if err != nil {
+		panic(err.Error())
+	}
 }

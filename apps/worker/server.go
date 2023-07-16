@@ -22,7 +22,17 @@ func NewWorker(
 }
 
 func (w *Worker) Start(ctx context.Context) error {
-	return w.productCron.Start(ctx)
+	done := make(chan error)
+	go func(done chan<- error) {
+		err := w.productCron.Start(ctx)
+		done <- err
+	}(done)
+	for err := range done {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (w *Worker) Stop() {

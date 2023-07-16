@@ -35,5 +35,6 @@ func (u *ProductInfoService) GetMany(ctx context.Context, ids []uint) ([]*entiti
 }
 
 func (u *ProductInfoService) GetAll(ctx context.Context) ([]*entities.ProductInfo, error) {
+	u.logger.Info("running get all service")
 	return u.productRepo.GetAll(ctx)
 }

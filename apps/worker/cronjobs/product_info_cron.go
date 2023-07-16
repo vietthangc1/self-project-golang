@@ -24,7 +24,7 @@ func NewProductInfoCache(
 			Task: func() {
 				_, _ = productService.GetAll(ctx)
 			},
-			Scheduler: "@every 2m",
+			Scheduler: "@every 1m",
 			FirstRun:  true,
 		},
 	)
