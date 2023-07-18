@@ -27,6 +27,9 @@ run-worker:
 	go run ./cmd/worker
 
 run-product-internal:
+	go run ./cmd/product_server_internal
+
+run-product:
 	go run ./cmd/product_server
 
 lint:

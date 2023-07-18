@@ -10,13 +10,13 @@ import (
 
 func main() {
 	ctx := context.TODO()
-	l := logger.Factory("CMD/ProductServer")
+	l := logger.Factory("CMD/ProductServerInternal")
 	server, err := BuildServer(ctx)
 	if err != nil {
 		l.Error(err, "Build Server failed!")
 		panic(err.Error())
 	}
-	host := config.ProductAPIExt
+	host := config.ProductAPI
 	l.Info("Prepare for running product server", "host", host)
 	err = http.ListenAndServe(host, server)
 	if err != nil {

@@ -12,8 +12,7 @@ func NewHTTPserver(
 ) *gin.Engine {
 	s := gin.Default()
 
-	s.Use(middlewares.MiddlewareUserMetaData())
-	s.Use(middlewares.MiddlewareUserAdmin())
+	s.Use(middlewares.ByPassMiddlewareUserAdmin())
 
 	s.POST("/create", productHandler.Create)
 	s.GET("/get/:id", productHandler.GetMany)
