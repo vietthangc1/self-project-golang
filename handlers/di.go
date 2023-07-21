@@ -10,4 +10,5 @@ var Set = wire.NewSet(
 	NewModelInfoHandler,
 	NewBlockInfoHanfler,
 	NewBlockDataHandler,
+	NewOrderInfoHandler,
 )

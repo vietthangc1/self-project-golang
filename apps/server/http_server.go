@@ -14,6 +14,7 @@ func NewHTTPserver(
 	modelInfoHandler *handlers.ModelInfoHandler,
 	blockInfoHanfler *handlers.BlockInfoHandler,
 	blockDataHandler *handlers.BlockDataHandler,
+	orderInfoHandler *handlers.OrderInfoHandler,
 ) *gin.Engine {
 	s := gin.Default()
 
@@ -39,5 +40,7 @@ func NewHTTPserver(
 	s.GET("/block/code/:code", blockInfoHanfler.GetByCode)
 
 	s.GET("/data", blockDataHandler.GetData)
+
+	s.POST("/order/create", orderInfoHandler.Create)
 	return s
 }

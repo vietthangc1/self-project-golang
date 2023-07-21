@@ -65,6 +65,10 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	apiCallerImpl := apix.NewAPICaller()
 	blockDataService := services.NewBlockDataService(blockInfoService, readModelDataService, modelInfoService, apiCallerImpl)
 	blockDataHandler := handlers.NewBlockDataHandler(blockDataService)
-	engine := server.NewHTTPserver(mockHandler, userAdminHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler)
+	orderMysql := mysql.NewOrderMysql(db)
+	orderInfoService := services.NewOrderInfoService(orderMysql)
+	authorizationService := services.NewAuthorizationService(userAdminService)
+	orderInfoHandler := handlers.NewOrderInfoHandler(orderInfoService, authorizationService)
+	engine := server.NewHTTPserver(mockHandler, userAdminHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler, orderInfoHandler)
 	return engine, nil
 }

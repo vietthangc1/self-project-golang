@@ -11,4 +11,5 @@ var Set = wire.NewSet(
 	NewBlockInfoService,
 	NewBlockDataService,
 	NewAuthorizationService,
+	NewOrderInfoService,
 )

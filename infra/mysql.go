@@ -24,7 +24,7 @@ func NewMySQLConnection() (*gorm.DB, error) {
 		&entities.CustomerInfo{},
 		&entities.ModelSource{},
 		&entities.ModelInfo{},
-		&entities.BlockInfo{},
+		&entities.OrderInfo{},
 	)
 
 	if err != nil {

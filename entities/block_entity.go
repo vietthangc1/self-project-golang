@@ -7,7 +7,7 @@ import (
 
 type BlockInfo struct {
 	ID          uint   `gorm:"autoIncrement" json:"id,omitempty"`
-	Code        string `json:"code" gorm:"unique,omitempty"`
+	Code        string `json:"code,omitempty"`
 	Description string `json:"description,omitempty"`
 	ModelIDs    string `json:"model_ids,omitempty"`
 }
@@ -19,6 +19,7 @@ type BlockInfoTransform struct {
 	ModelIDs    []int32 `json:"model_ids,omitempty"`
 }
 
+//nolint:goconst
 func (b *BlockInfo) Transform() *BlockInfoTransform {
 	modelIDs := []int32{}
 	modelIDString := b.ModelIDs

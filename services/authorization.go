@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
@@ -38,4 +39,25 @@ func (s *AuthorizationService) VerifyMetaData(
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (s *AuthorizationService) GetCustomerInfo(
+	ctx context.Context,
+) (int32, error) {
+	customerContex := ctx.Value(commonx.UserMetadataCtxKey)
+	if customerContex == nil {
+		s.logger.Error(commonx.ErrUnknown, "cannot find customer id")
+		return 0, commonx.ErrUnknown
+	}
+	customerInfo := customerContex.(*entities.UserMetadata)
+	customerID := customerInfo.CustomerID
+	if customerID != "" {
+		customerIDInt, err := strconv.ParseInt(customerID, 10, 64)
+		if err != nil {
+			s.logger.Error(err, "error in parsing int", "customer_id", customerIDInt)
+			return 0, err
+		}
+		return int32(customerIDInt), nil
+	}
+	return 0, commonx.ErrUnknown
 }
