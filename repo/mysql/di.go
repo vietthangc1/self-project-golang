@@ -8,4 +8,5 @@ var Set = wire.NewSet(
 	NewProductInfoMysql,
 	NewModelInfoMysql,
 	NewBlockInfoMysql,
+	NewOrderMysql,
 )

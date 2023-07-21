@@ -22,4 +22,5 @@ var Set = wire.NewSet(
 	wire.Bind(new(repo.ReadModelDataRepo), new(*cache.ReadModelDataCache)),
 	wire.Bind(new(repo.ModelInfoRepo), new(*mysql.ModelInfoMysql)),
 	wire.Bind(new(repo.BlockInfoRepo), new(*mysql.BlockInfoMysql)),
+	wire.Bind(new(repo.OrderInfoRepo), new(*mysql.OrderMysql)),
 )
