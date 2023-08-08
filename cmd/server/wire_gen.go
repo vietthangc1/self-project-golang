@@ -16,7 +16,6 @@ import (
 	"github.com/thangpham4/self-project/pkg/kvredis"
 	"github.com/thangpham4/self-project/pkg/sheets"
 	"github.com/thangpham4/self-project/repo/cache"
-	"github.com/thangpham4/self-project/repo/mongodb"
 	"github.com/thangpham4/self-project/repo/mysql"
 	"github.com/thangpham4/self-project/repo/sheet"
 	"github.com/thangpham4/self-project/services"
@@ -37,12 +36,7 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	}
 	mockMysql := mysql.NewMockMysql(db)
 	mockCache := cache.NewMockCache(kvRedisImpl, mockMysql)
-	mongoClient, err := infra.NewMongoDBConnection()
-	if err != nil {
-		return nil, err
-	}
-	mockMongoDB := mongodb.NewMockMongoDB(mongoClient)
-	mockService := services.NewMockService(mockCache, mockMongoDB)
+	mockService := services.NewMockService(mockCache)
 	mockHandler := handlers.NewMockHandler(mockService)
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
@@ -66,9 +60,9 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	blockDataService := services.NewBlockDataService(blockInfoService, readModelDataService, modelInfoService, apiCallerImpl)
 	blockDataHandler := handlers.NewBlockDataHandler(blockDataService)
 	orderMysql := mysql.NewOrderMysql(db)
-	orderInfoService := services.NewOrderInfoService(orderMysql)
+	orderInfoService := services.NewOrderInfoService(orderMysql, apiCallerImpl)
 	authorizationService := services.NewAuthorizationService(userAdminService)
-	orderInfoHandler := handlers.NewOrderInfoHandler(orderInfoService, authorizationService)
+	orderInfoHandler := handlers.NewOrderInfoHandler(orderInfoService, authorizationService, apiCallerImpl)
 	engine := server.NewHTTPserver(mockHandler, userAdminHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler, orderInfoHandler)
 	return engine, nil
 }

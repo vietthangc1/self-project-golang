@@ -22,7 +22,6 @@ func NewHTTPserver(
 	s.Use(middlewares.MiddlewareUserAdmin())
 
 	s.GET("/mock/cache", mockHandler.GetCache)
-	s.GET("/mock/mongo", mockHandler.GetMockMongo)
 
 	s.POST("/user/create", userHandler.Create)
 	s.GET("/user/get/:id", userHandler.Get)
@@ -42,5 +41,6 @@ func NewHTTPserver(
 	s.GET("/data", blockDataHandler.GetData)
 
 	s.POST("/order/create", orderInfoHandler.Create)
+	s.GET("/order/id/:id", orderInfoHandler.GetByID)
 	return s
 }

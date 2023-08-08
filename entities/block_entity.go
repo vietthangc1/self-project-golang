@@ -19,7 +19,6 @@ type BlockInfoTransform struct {
 	ModelIDs    []int32 `json:"model_ids,omitempty"`
 }
 
-//nolint:goconst
 func (b *BlockInfo) Transform() *BlockInfoTransform {
 	modelIDs := []int32{}
 	modelIDString := b.ModelIDs

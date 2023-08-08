@@ -25,12 +25,13 @@ func NewOrderMysql(
 	}
 }
 
-func (m *OrderMysql) Create(ctx context.Context, order *entities.OrderInfo) (*entities.OrderInfoTransform, error) {
-	err := m.db.WithContext(ctx).Create(order).Error
+func (m *OrderMysql) Create(ctx context.Context, order *entities.OrderInfoTransform) (*entities.OrderInfoTransform, error) {
+	orderInput := order.ReTransform()
+	err := m.db.WithContext(ctx).Create(orderInput).Error
 	if err != nil {
 		return nil, err
 	}
-	return order.Transform(), nil
+	return orderInput.Transform(), nil
 }
 
 func (m *OrderMysql) GetByID(ctx context.Context, id uint) (*entities.OrderInfoTransform, error) {

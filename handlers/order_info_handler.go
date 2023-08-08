@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/thangpham4/self-project/entities"
+	"github.com/thangpham4/self-project/pkg/apix"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
@@ -15,22 +16,25 @@ import (
 type OrderInfoHandler struct {
 	orderService     *services.OrderInfoService
 	authorizeService *services.AuthorizationService
+	apiClient        apix.APICaller
 	logger           logger.Logger
 }
 
 func NewOrderInfoHandler(
 	orderService *services.OrderInfoService,
 	authorizeService *services.AuthorizationService,
+	apiClient apix.APICaller,
 ) *OrderInfoHandler {
 	return &OrderInfoHandler{
 		orderService:     orderService,
 		authorizeService: authorizeService,
+		apiClient:        apiClient,
 		logger:           logger.Factory("OrderInfoHandler"),
 	}
 }
 
 func (h *OrderInfoHandler) Create(ctx *gin.Context) {
-	var order entities.OrderInfo
+	var order entities.OrderInfoTransform
 	err := json.NewDecoder(ctx.Request.Body).Decode(&order)
 	if err != nil {
 		h.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
