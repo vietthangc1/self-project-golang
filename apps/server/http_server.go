@@ -22,6 +22,8 @@ func NewHTTPserver(
 	s.Use(middlewares.MiddlewareUserAdmin())
 
 	s.GET("/mock/cache", mockHandler.GetCache)
+	s.POST("/mock/kafka", mockHandler.SendMessage)
+	s.GET("/mock/kafka", mockHandler.ReceiveMessage)
 
 	s.POST("/user/create", userHandler.Create)
 	s.GET("/user/get/:id", userHandler.Get)
