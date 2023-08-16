@@ -7,8 +7,14 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/gin-gonic/gin"
+	"github.com/thangpham4/self-project/pkg/envx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
+)
+
+var (
+	kafkaHost = envx.String("KAFKA_HOST", "localhost:9092")
+	topicName = "test-topic"
 )
 
 type MockHandler struct {
@@ -65,9 +71,8 @@ func (m *MockHandler) SendMessage(ctx *gin.Context) {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	// config.Producer.Partitioner = sarama.NewRandomPartitioner("mock-topic")
 
-	producer, err := sarama.NewSyncProducer([]string{"localhost:9092"}, config)
+	producer, err := sarama.NewSyncProducer([]string{kafkaHost}, config)
 	if err != nil {
 		m.logger.Error(err, "error in creating producer")
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -76,7 +81,7 @@ func (m *MockHandler) SendMessage(ctx *gin.Context) {
 
 	// Create a message
 	msg := &sarama.ProducerMessage{
-		Topic: "test-topic",
+		Topic: topicName,
 		Value: sarama.StringEncoder(string(msgStr)),
 	}
 
@@ -95,6 +100,7 @@ func (m *MockHandler) SendMessage(ctx *gin.Context) {
 		"status":    "OK",
 		"partition": part,
 		"offset":    offset,
+		"topic":     topicName,
 	})
 }
 
