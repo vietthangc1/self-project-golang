@@ -34,3 +34,6 @@ run-product:
 
 lint:
 	golangci-lint run --timeout 10m
+
+test:
+	go test -v ./...

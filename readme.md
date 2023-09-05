@@ -20,13 +20,10 @@ This is the project adapted from Tiki recommendation, with multiple blocks and m
 
 ## Before running the project
 #### 1. Applications
-| Type | Name | Descriptions |
-| ------ | ------ | ------ |
-| Language | Golang | Gin framework for the server |
-| Databse SQL | MySQL | Store block, model, customer, product and admin information|
-| Database NoSQL | MongoDB | Todo: for storing buffer of model config |
-| Cache | Redis | Store product and model config information|
-| Sheets | Google Sheets | Model configuration file |
+Run Redis and Mysql through Docker
+```
+docker compose up
+```
 #### 2. Environment Variables
 ```
 export MYSQL_ADDR // the DNS connection uri to mysql
