@@ -11,6 +11,16 @@ import (
 func NewMySQLConnection() (*gorm.DB, error) {
 	l := logger.Factory("Setup Mysql")
 	dsn := envx.String("MYSQL_ADDR", "")
+	return NewMySQL(dsn, l)
+}
+
+func NewMySQLConnectionTest() (*gorm.DB, error) {
+	l := logger.Factory("Setup Mysql Dev")
+	dsn := "root:Chaugn@rs2@tcp(127.0.0.1:3306)/self_project_dev?charset=utf8&parseTime=True&loc=Local&multiStatements=true"
+	return NewMySQL(dsn, l)
+}
+
+func NewMySQL(dsn string, l logger.Logger) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		l.V(logger.LogErrorLevel).Error(err, "failed to set up mysql", "mysql_uri", dsn)

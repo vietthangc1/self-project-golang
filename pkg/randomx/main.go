@@ -12,6 +12,13 @@ func RandString(length int) string {
 	return out
 }
 
+func RandEmail() string {
+	emailUsernameLength := 10
+	emailDomainLength := 5
+	emailHost := "com"
+	return RandString(emailUsernameLength)+"@"+RandString(emailDomainLength)+emailHost
+}
+
 func RandInt(min, max int) int {
 	if min > max {
 		return 0

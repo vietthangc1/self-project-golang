@@ -2,6 +2,7 @@ package randomx
 
 import (
 	"math/rand"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,6 +13,12 @@ func TestRandomString(t *testing.T) {
 	outString := RandString(lenString)
 
 	require.Equal(t, lenString, len(outString))
+}
+
+func TestRandomEmail(t *testing.T) {
+	out := RandEmail()
+	indexOfAt := strings.Index(out, "@")
+	require.Greater(t, indexOfAt, 0)
 }
 
 func TestRandomInt(t *testing.T) {
