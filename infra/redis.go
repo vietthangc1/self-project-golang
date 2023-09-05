@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	defaultRedisAddr string = "localhost:6379"
+	defaultRedisAddr string = "0.0.0.0:6379"
 )
 
 type RedisConfig struct {

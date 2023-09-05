@@ -49,7 +49,7 @@ func (k *KafkaConfig) consume(ctx context.Context) error {
 			// recreated to get the new claims
 			err := k.Client.Consume(ctx, k.Topics, &consumer)
 			errs <- err
-			// check if context was cancelled, signaling that the consumer should stop
+			// check if context was canceled, signaling that the consumer should stop
 			if ctx.Err() != nil {
 				return
 			}
@@ -77,7 +77,7 @@ func (k *KafkaConfig) consume(ctx context.Context) error {
 	for keepRunning {
 		select {
 		case <-ctx.Done():
-			log.Println("terminating: context cancelled")
+			log.Println("terminating: context canceled")
 			keepRunning = false
 		case <-sigterm:
 			log.Println("terminating: via signal")

@@ -13,7 +13,7 @@ func TestCreateUser(t *testing.T) {
 	createRandomUser(t)
 }
 
-func TestGetUserByID(t * testing.T) {
+func TestGetUserByID(t *testing.T) {
 	newUser := createRandomUser(t)
 	r := require.New(t)
 
@@ -28,7 +28,7 @@ func TestGetUserByID(t * testing.T) {
 	r.NotEqual(newUser.Password, user.Password)
 }
 
-func TestGetUserByEmail(t * testing.T) {
+func TestGetUserByEmail(t *testing.T) {
 	newUser := createRandomUser(t)
 	r := require.New(t)
 

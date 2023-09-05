@@ -1,7 +1,6 @@
-FROM golang:1.20-alpine
+# Builder
+FROM golang:1.20-alpine as builder
 WORKDIR /app
-
-# Copy the current directory contents into the container at /app
 
 COPY go.mod ./
 COPY go.sum ./
@@ -9,11 +8,14 @@ COPY go.sum ./
 RUN go mod tidy
 COPY . .
 
-# Build the Golang application
-RUN go build ./cmd/server
+RUN go build -o main ./cmd/server
+
+# Run stage
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/main .
 
 # Expose port 8080
-EXPOSE 3000
-
+EXPOSE 8080 6379 3306
 # Set the entrypoint to run the Golang application
-CMD ["go", "run", "./cmd/server"]
+CMD ["/app/main"]
