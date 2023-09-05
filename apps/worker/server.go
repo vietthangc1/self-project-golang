@@ -10,7 +10,7 @@ import (
 
 type Worker struct {
 	productCron *cronjobs.ProductInfoCronCache
-	orderKafka *kafka.OrderKafka
+	orderKafka  *kafka.OrderKafka
 	logger      logger.Logger
 }
 
@@ -20,7 +20,7 @@ func NewWorker(
 ) *Worker {
 	return &Worker{
 		productCron: productCron,
-		orderKafka: orderKafka,
+		orderKafka:  orderKafka,
 		logger:      logger.Factory("Worker"),
 	}
 }
