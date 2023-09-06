@@ -16,7 +16,10 @@ func NewMySQLConnection() (*gorm.DB, error) {
 
 func NewMySQLConnectionTest() (*gorm.DB, error) {
 	l := logger.Factory("Setup Mysql Dev")
-	dsn := "root:Chaugn@rs2@tcp(127.0.0.1:3306)/self_project_dev?charset=utf8&parseTime=True&loc=Local&multiStatements=true"
+	dsn := envx.String(
+		"MYSQL_ADDR_TEST",
+		"root:Chaugn@rs2@tcp(127.0.0.1:3306)/self_project_dev?charset=utf8&parseTime=True&loc=Local&multiStatements=true",
+	)
 	return NewMySQL(dsn, l)
 }
 

@@ -14,8 +14,9 @@ RUN go build -o main ./cmd/server
 FROM alpine
 WORKDIR /app
 COPY --from=builder /app/main .
+COPY credentials credentials
 
 # Expose port 8080
-EXPOSE 8080 6379 3306
+EXPOSE 8080
 # Set the entrypoint to run the Golang application
 CMD ["/app/main"]
