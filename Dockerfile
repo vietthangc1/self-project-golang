@@ -15,6 +15,7 @@ FROM alpine
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY credentials credentials
+COPY wait-for-it.sh .
 
 # Expose port 8080
 EXPOSE 8080
