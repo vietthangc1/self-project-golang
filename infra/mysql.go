@@ -10,7 +10,7 @@ import (
 
 func NewMySQLConnection() (*gorm.DB, error) {
 	l := logger.Factory("Setup Mysql")
-	dsn := envx.String("MYSQL_ADDR", "root:Chaugn@rs2@tcp(0.0.0.0:3306)/self_project?charset=utf8&parseTime=True&loc=Local&multiStatements=true")
+	dsn := envx.String("MYSQL_ADDR", "")
 	return NewMySQL(dsn, l)
 }
 
