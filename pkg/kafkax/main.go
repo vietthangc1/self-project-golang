@@ -36,7 +36,7 @@ func (k *KafkaConfig) consume(ctx context.Context) error {
 	consumer := Consumer{
 		ready: make(chan bool),
 	}
-	consumptionIsPaused := false
+	// consumptionIsPaused := false
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
@@ -66,8 +66,8 @@ func (k *KafkaConfig) consume(ctx context.Context) error {
 	<-consumer.ready // Await till the consumer has been set up
 	log.Println("Sarama consumer up and running!...")
 
-	sigusr1 := make(chan os.Signal, 1)
-	signal.Notify(sigusr1, syscall.SIGUSR1)
+	// sigusr1 := make(chan os.Signal, 1)
+	// signal.Notify(sigusr1, syscall.SIGUSR1)
 
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
@@ -82,14 +82,15 @@ func (k *KafkaConfig) consume(ctx context.Context) error {
 		case <-sigterm:
 			log.Println("terminating: via signal")
 			keepRunning = false
-		case <-sigusr1:
-			toggleConsumptionFlow(k.Client, &consumptionIsPaused)
+		// case <-sigusr1:
+		// 	toggleConsumptionFlow(k.Client, &consumptionIsPaused)
 		}
 	}
 	wg.Wait()
 	return nil
 }
 
+//nolint:unused
 func toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
 	if *isPaused {
 		client.ResumeAll()

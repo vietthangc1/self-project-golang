@@ -14,6 +14,8 @@ var Set = wire.NewSet(
 	NewRedisConfig,
 	NewRedisClient,
 
+	NewBlobConnection,
+
 	kvredis.NewKVRedis,
 	wire.Bind(new(kvredis.KVRedis), new(*kvredis.KVRedisImpl)),
 
