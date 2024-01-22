@@ -37,3 +37,4 @@ func (m *MockService) GetMockCache(ctx context.Context) (*entities.MockEntities,
 		Message: mockMessage,
 	}, nil
 }
+

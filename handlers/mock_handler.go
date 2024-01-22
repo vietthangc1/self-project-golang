@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/IBM/sarama"
 	"github.com/gin-gonic/gin"
+	"github.com/thangpham4/self-project/pkg/blobx"
 	"github.com/thangpham4/self-project/pkg/envx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
@@ -19,6 +21,7 @@ var (
 
 type MockHandler struct {
 	mockService *services.MockService
+	blobConnection *azblob.Client
 	logger      logger.Logger
 }
 
@@ -29,9 +32,11 @@ type Message struct {
 
 func NewMockHandler(
 	mockService *services.MockService,
+	blobConnection *azblob.Client,
 ) *MockHandler {
 	return &MockHandler{
 		mockService: mockService,
+		blobConnection: blobConnection,
 		logger:      logger.Factory("MockHandler"),
 	}
 }
@@ -128,5 +133,18 @@ func (m *MockHandler) ReceiveMessage(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, gin.H{
 		"messgae": string(msgStr),
+	})
+}
+
+func (m *MockHandler) GetCSVBlob(ctx *gin.Context) {
+	blobInstance := blobx.NewBlobService(m.blobConnection)
+	out, err := blobInstance.ListBlob()
+	if err != nil {
+		m.logger.Error(err, "err in list blob")
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.IndentedJSON(http.StatusOK, gin.H{
+		"list_blob": out,
 	})
 }
