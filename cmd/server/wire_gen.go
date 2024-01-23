@@ -37,7 +37,11 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	mockMysql := mysql.NewMockMysql(db)
 	mockCache := cache.NewMockCache(kvRedisImpl, mockMysql)
 	mockService := services.NewMockService(mockCache)
-	mockHandler := handlers.NewMockHandler(mockService)
+	azblobClient, err := infra.NewBlobConnection()
+	if err != nil {
+		return nil, err
+	}
+	mockHandler := handlers.NewMockHandler(mockService, azblobClient)
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
 	userAdminHandler := handlers.NewUserAdminHandler(userAdminService)

@@ -136,7 +136,7 @@ func (m *MockHandler) ReceiveMessage(ctx *gin.Context) {
 	})
 }
 
-func (m *MockHandler) GetCSVBlob(ctx *gin.Context) {
+func (m *MockHandler) ListBlob(ctx *gin.Context) {
 	blobInstance := blobx.NewBlobService(m.blobConnection)
 	out, err := blobInstance.ListBlob()
 	if err != nil {
