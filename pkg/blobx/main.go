@@ -19,7 +19,7 @@ type BlobServiceImpl struct {
 }
 
 func NewBlobService(client *azblob.Client) *BlobServiceImpl {
-	containerName := envx.String("BLOB_CONTAINER", "")
+	containerName := envx.String("BLOB_CONTAINER", "knime")
 	return &BlobServiceImpl{
 		ContainerName: containerName,
 		Client:        client,

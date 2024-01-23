@@ -14,7 +14,6 @@ import (
 	"github.com/thangpham4/self-project/infra"
 	"github.com/thangpham4/self-project/pkg/apix"
 	"github.com/thangpham4/self-project/pkg/kvredis"
-	"github.com/thangpham4/self-project/pkg/sheets"
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mysql"
 	"github.com/thangpham4/self-project/repo/sheet"
@@ -45,12 +44,7 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
 	userAdminHandler := handlers.NewUserAdminHandler(userAdminService)
-	service, err := infra.NewSheetService(contextContext)
-	if err != nil {
-		return nil, err
-	}
-	sheetService := sheets.NewSheetService(service)
-	readModelSheet := sheet.NewReadModelSheet(sheetService)
+	readModelSheet := sheet.NewReadModelSheet()
 	readModelDataCache := cache.NewReadModelDataCache(readModelSheet, kvRedisImpl)
 	modelInfoMysql := mysql.NewModelInfoMysql(db)
 	readModelDataService := services.NewReadModelDataService(readModelDataCache, modelInfoMysql)

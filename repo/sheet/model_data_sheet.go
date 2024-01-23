@@ -7,29 +7,28 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
-	"github.com/thangpham4/self-project/pkg/sheets"
 	"github.com/thangpham4/self-project/repo"
 )
 
-const (
-	columnForKey       = "A"
-	columnForProductID = "B"
-	columnForScore     = "C"
-)
+// const (
+// 	columnForKey       = "A"
+// 	columnForProductID = "B"
+// 	columnForScore     = "C"
+// )
 
 var _ repo.ReadModelDataRepo = &ReadModelSheet{}
 
 type ReadModelSheet struct {
-	service *sheets.SheetService
-	logger  logger.Logger
+	// service *sheets.SheetService
+	logger logger.Logger
 }
 
 func NewReadModelSheet(
-	service *sheets.SheetService,
+// service *sheets.SheetService,
 ) *ReadModelSheet {
 	return &ReadModelSheet{
-		service: service,
-		logger:  logger.Factory("ReadModelSheet"),
+		// service: service,
+		logger: logger.Factory("ReadModelSheet"),
 	}
 }
 
@@ -38,51 +37,54 @@ func (r *ReadModelSheet) GetModelRawData(
 	ctx context.Context,
 	sheetID, sheetName string,
 ) ([]string, []string, []string, error) {
-	keyRaw, err := r.service.GetColumnData(
-		ctx,
-		sheetID,
-		sheetName,
-		columnForKey,
-	)
-	if err != nil {
-		r.logger.Error(err, "error in read model sheet, getting key column")
-		return nil, nil, nil, err
-	}
-
-	productIDRaw, err := r.service.GetColumnData(
-		ctx,
-		sheetID,
-		sheetName,
-		columnForProductID,
-	)
-	if err != nil {
-		r.logger.Error(err, "error in read model sheet, getting key column")
-		return nil, nil, nil, err
-	}
-
-	scoreRaw, err := r.service.GetColumnData(
-		ctx,
-		sheetID,
-		sheetName,
-		columnForScore,
-	)
-	if err != nil {
-		r.logger.Error(err, "error in read model sheet, getting score column")
-		return nil, nil, nil, err
-	}
-
-	if len(keyRaw) <= 1 || len(keyRaw) != len(productIDRaw) || len(keyRaw) != len(scoreRaw) {
-		r.logger.Error(
-			commonx.ErrInsufficientDataGet,
-			"key, productID, score do not have the same range",
-			"key", len(keyRaw),
-			"productID", len(productIDRaw),
-			"score", len(scoreRaw),
-		)
-		return nil, nil, nil, commonx.ErrorMessages(commonx.ErrInsufficientDataGet, "columns not same length")
-	}
-
-	r.logger.V(logger.LogDebugLevel).Info("got data from sheet", "sheetId", sheetID, "len data", len(keyRaw))
+	// keyRaw, err := r.service.GetColumnData(
+	// 	ctx,
+	// 	sheetID,
+	// 	sheetName,
+	// 	columnForKey,
+	// )
+	// if err != nil {
+	// 	r.logger.Error(err, "error in read model sheet, getting key column")
+	// 	return nil, nil, nil, err
+	// }
+	//
+	// productIDRaw, err := r.service.GetColumnData(
+	// 	ctx,
+	// 	sheetID,
+	// 	sheetName,
+	// 	columnForProductID,
+	// )
+	// if err != nil {
+	// 	r.logger.Error(err, "error in read model sheet, getting key column")
+	// 	return nil, nil, nil, err
+	// }
+	//
+	// scoreRaw, err := r.service.GetColumnData(
+	// 	ctx,
+	// 	sheetID,
+	// 	sheetName,
+	// 	columnForScore,
+	// )
+	// if err != nil {
+	// 	r.logger.Error(err, "error in read model sheet, getting score column")
+	// 	return nil, nil, nil, err
+	// }
+	//
+	// if len(keyRaw) <= 1 || len(keyRaw) != len(productIDRaw) || len(keyRaw) != len(scoreRaw) {
+	// 	r.logger.Error(
+	// 		commonx.ErrInsufficientDataGet,
+	// 		"key, productID, score do not have the same range",
+	// 		"key", len(keyRaw),
+	// 		"productID", len(productIDRaw),
+	// 		"score", len(scoreRaw),
+	// 	)
+	// 	return nil, nil, nil, commonx.ErrorMessages(commonx.ErrInsufficientDataGet, "columns not same length")
+	// }
+	//
+	// r.logger.V(logger.LogDebugLevel).Info("got data from sheet", "sheetId", sheetID, "len data", len(keyRaw))
+	keyRaw := []string{}
+	productIDRaw := []string{}
+	scoreRaw := []string{}
 	return keyRaw, productIDRaw, scoreRaw, nil
 }
 

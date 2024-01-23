@@ -24,6 +24,7 @@ func NewHTTPserver(
 	s.GET("/mock/cache", mockHandler.GetCache)
 	s.POST("/mock/kafka", mockHandler.SendMessage)
 	s.GET("/mock/kafka", mockHandler.ReceiveMessage)
+	s.GET("/mock/blob", mockHandler.ListBlob)
 
 	s.POST("/user/create", userHandler.Create)
 	s.GET("/user/get/:id", userHandler.Get)

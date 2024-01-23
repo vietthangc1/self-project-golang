@@ -11,7 +11,7 @@ func NewBlobConnection() (*azblob.Client, error) {
 	// uri := envx.String("BLOB_HOST", "")
 	// accessKey := envx.String("BLOB_ACCESS_KEY", "")
 
-	connectionString := envx.String("BLOB_CONNECTION_STRING", "")
+	connectionString := envx.String("BLOB_CONNECTION_STRING", "DefaultEndpointsProtocol=https;AccountName=fhintblob;AccountKey=7cJuYWHAbV5r/viWQ2w1nYX9Ln355yhKFCdmeGSac0wjp6Yc9/4soufqd2Mwk2qdOhQ86TJDaoCP+ASt45kj9A==;EndpointSuffix=core.windows.net")
 
 	client, err := azblob.NewClientFromConnectionString(connectionString, nil)
 	if err != nil {
