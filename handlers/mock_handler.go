@@ -20,9 +20,9 @@ var (
 )
 
 type MockHandler struct {
-	mockService *services.MockService
+	mockService    *services.MockService
 	blobConnection *azblob.Client
-	logger      logger.Logger
+	logger         logger.Logger
 }
 
 type Message struct {
@@ -35,9 +35,9 @@ func NewMockHandler(
 	blobConnection *azblob.Client,
 ) *MockHandler {
 	return &MockHandler{
-		mockService: mockService,
+		mockService:    mockService,
 		blobConnection: blobConnection,
-		logger:      logger.Factory("MockHandler"),
+		logger:         logger.Factory("MockHandler"),
 	}
 }
 
@@ -146,5 +146,19 @@ func (m *MockHandler) ListBlob(ctx *gin.Context) {
 	}
 	ctx.IndentedJSON(http.StatusOK, gin.H{
 		"list_blob": out,
+	})
+}
+
+func (m *MockHandler) ReadBlob(ctx *gin.Context) {
+	path := ctx.Query("path")
+	blobInstance := blobx.NewBlobService(m.blobConnection)
+	out, err := blobInstance.GetCSV(path)
+	if err != nil {
+		m.logger.Error(err, "error in reading csv", "path", path)
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.IndentedJSON(http.StatusOK, gin.H{
+		"data": out,
 	})
 }
