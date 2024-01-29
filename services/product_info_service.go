@@ -13,6 +13,10 @@ type ProductInfoService struct {
 	logger      logger.Logger
 }
 
+const (
+	productNoImageURL string = "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"
+)
+
 func NewProductInfoService(
 	productRepo repo.ProductInfoRepo,
 ) *ProductInfoService {
@@ -31,7 +35,17 @@ func (u *ProductInfoService) Get(ctx context.Context, id uint) (*entities.Produc
 }
 
 func (u *ProductInfoService) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
-	return u.productRepo.GetMany(ctx, ids)
+	productsArray, err := u.productRepo.GetMany(ctx, ids)
+	if err != nil {
+		u.logger.Error(err, "error in get many products")
+		return nil, err
+	}
+	for _, product := range productsArray {
+		if product.ImageURI == "" {
+			product.ImageURI = productNoImageURL
+		}
+	}
+	return productsArray, nil
 }
 
 func (u *ProductInfoService) GetAll(ctx context.Context) ([]*entities.ProductInfo, error) {

@@ -27,9 +27,9 @@ func NewReadModelDataService(
 
 func (s *ReadModelDataService) ReadModelData(
 	ctx context.Context,
-	sheetID, sheetName string,
+	blobName string,
 ) ([]*entities.ModelDataMaster, error) {
-	return s.modelRepo.ReadModelData(ctx, sheetID, sheetName)
+	return s.modelRepo.ReadModelData(ctx, blobName)
 }
 
 func (s *ReadModelDataService) ReadModelDataForCustomerFromEntity(
@@ -37,10 +37,10 @@ func (s *ReadModelDataService) ReadModelDataForCustomerFromEntity(
 	modelInfo *entities.ModelInfo,
 	customerID string,
 ) (*entities.ModelDataMaster, error) {
-	sheetID, sheetName := modelInfo.Source.SheetID, modelInfo.Source.SheetName
-	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
+	blobName := modelInfo.Source.BlobName
+	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, blobName)
 	if err != nil {
-		s.logger.Error(err, "get model data error", "sheet_name", sheetName, "sheet_id", sheetID)
+		s.logger.Error(err, "get model data error", "blob_name", blobName)
 		return nil, err
 	}
 
@@ -73,11 +73,11 @@ func (s *ReadModelDataService) ReadModelDataForCustomerFromCode(
 		return nil, model, err
 	}
 
-	sheetID, sheetName := model.Source.SheetID, model.Source.SheetName
+	blobName := model.Source.BlobName
 
-	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, sheetID, sheetName)
+	modelData, err := s.modelRepo.ReadModelDataTransform(ctx, blobName)
 	if err != nil {
-		s.logger.Error(err, "error in reading model data", "sheet_id", sheetID, "sheet_name", sheetName)
+		s.logger.Error(err, "error in reading model data", "blob_name", blobName)
 		return nil, model, err
 	}
 
@@ -91,8 +91,7 @@ func (s *ReadModelDataService) ReadModelDataForCustomerFromCode(
 		s.logger.Info(
 			"customer id not in pool model, return default data",
 			"customer_id", customerID,
-			"sheet_id", sheetID,
-			"sheet_name", sheetName,
+			"blob_name", blobName,
 		)
 		modelDataCustomer = modelData[customerIDDefault]
 	}

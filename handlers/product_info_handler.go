@@ -54,6 +54,10 @@ func (u *ProductInfoHandler) Create(ctx *gin.Context) {
 		return
 	}
 
+	if product.CreatedBy == "" {
+		product.CreatedBy = user.Email
+	}
+
 	productPointer, err := u.productService.Create(ctx, &product)
 	if err != nil {
 		u.logger.Error(err, "error in create product", "product", product)

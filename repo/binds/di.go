@@ -3,6 +3,7 @@ package binds
 import (
 	"github.com/google/wire"
 	"github.com/thangpham4/self-project/repo"
+	"github.com/thangpham4/self-project/repo/blob"
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mysql"
 	"github.com/thangpham4/self-project/repo/sheet"
@@ -12,6 +13,7 @@ var Set = wire.NewSet(
 	mysql.Set,
 	cache.Set,
 	sheet.Set,
+	blob.Set,
 
 	wire.Bind(new(repo.MockRepo), new(*cache.MockCache)),
 	wire.Bind(new(repo.UserAdminRepo), new(*mysql.UserAdminMysql)),

@@ -9,10 +9,10 @@ import (
 type ReadModelDataRepo interface {
 	ReadModelData(
 		ctx context.Context,
-		sheetID, sheetName string,
+		blobName string,
 	) ([]*entities.ModelDataMaster, error)
 	ReadModelDataTransform(
 		ctx context.Context,
-		sheetID, sheetName string,
+		blobName string,
 	) (map[string]*entities.ModelDataMaster, error)
 }

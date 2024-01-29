@@ -7,7 +7,6 @@ import (
 	"github.com/thangpham4/self-project/entities"
 	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
-	"github.com/thangpham4/self-project/repo"
 )
 
 // const (
@@ -15,8 +14,6 @@ import (
 // 	columnForProductID = "B"
 // 	columnForScore     = "C"
 // )
-
-var _ repo.ReadModelDataRepo = &ReadModelSheet{}
 
 type ReadModelSheet struct {
 	// service *sheets.SheetService

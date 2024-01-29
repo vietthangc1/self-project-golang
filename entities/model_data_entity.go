@@ -31,18 +31,17 @@ func (m *ModelInfo) Validate() error {
 			fmt.Sprintf("model has no source, code: %s", m.Code),
 		)
 	}
-	sheetID, sheetName := modelSource.SheetID, modelSource.SheetName
-	if sheetID == "" || sheetName == "" {
+	blobName := modelSource.BlobName
+	if blobName == "" {
 		return commonx.ErrorMessages(
 			commonx.ErrInsufficientDataGet,
-			fmt.Sprintf("model source has nil sheet info, code: %s", m.Code),
+			fmt.Sprintf("model source has nil blob name, code: %s", m.Code),
 		)
 	}
 	return nil
 }
 
 type ModelSource struct {
-	ID        uint   `gorm:"autoIncrement" json:"id"`
-	SheetID   string `json:"sheet_id"`
-	SheetName string `json:"sheet_name"`
+	ID       uint   `gorm:"autoIncrement" json:"id"`
+	BlobName string `json:"blob_name,omitempty"`
 }

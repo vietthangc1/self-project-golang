@@ -39,7 +39,7 @@ func (h *ReadModelDataHandler) ReadModelData(
 		return
 	}
 
-	out, err := h.modelService.ReadModelData(ctx, request.SheetID, request.SheetName)
+	out, err := h.modelService.ReadModelData(ctx, request.BlobName)
 	if err != nil {
 		h.logger.Error(err, "error in Read model data through service", "request", request)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})

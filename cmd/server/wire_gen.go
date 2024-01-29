@@ -13,10 +13,11 @@ import (
 	"github.com/thangpham4/self-project/handlers"
 	"github.com/thangpham4/self-project/infra"
 	"github.com/thangpham4/self-project/pkg/apix"
+	"github.com/thangpham4/self-project/pkg/blobx"
 	"github.com/thangpham4/self-project/pkg/kvredis"
+	"github.com/thangpham4/self-project/repo/blob"
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mysql"
-	"github.com/thangpham4/self-project/repo/sheet"
 	"github.com/thangpham4/self-project/services"
 )
 
@@ -44,8 +45,9 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
 	userAdminHandler := handlers.NewUserAdminHandler(userAdminService)
-	readModelSheet := sheet.NewReadModelSheet()
-	readModelDataCache := cache.NewReadModelDataCache(readModelSheet, kvRedisImpl)
+	blobServiceImpl := blobx.NewBlobService(azblobClient)
+	readModelBlob := blob.NewReadModelBlob(blobServiceImpl)
+	readModelDataCache := cache.NewReadModelDataCache(readModelBlob, kvRedisImpl)
 	modelInfoMysql := mysql.NewModelInfoMysql(db)
 	readModelDataService := services.NewReadModelDataService(readModelDataCache, modelInfoMysql)
 	modelInfoService := services.NewModelInfoService(modelInfoMysql)
