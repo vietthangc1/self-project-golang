@@ -41,6 +41,7 @@ func NewMySQL(dsn string, l logger.Logger) (*gorm.DB, error) {
 		&entities.ModelSource{},
 		&entities.ModelInfo{},
 		&entities.OrderInfo{},
+		&entities.BlockInfo{},
 	)
 
 	if err != nil {
