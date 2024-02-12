@@ -4,12 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/thangpham4/self-project/pkg/envx"
+	"github.com/thangpham4/self-project/config"
 	"github.com/thangpham4/self-project/pkg/logger"
-)
-
-const (
-	defaultHost string = "localhost:8080"
 )
 
 func main() {
@@ -20,7 +16,7 @@ func main() {
 		l.Error(err, "Build Server failed!")
 		panic(err.Error())
 	}
-	host := envx.String("HOST", defaultHost)
+	host := config.Domain
 	l.Info("Prepare for running server", "host", host)
 	err = http.ListenAndServe(host, server)
 	if err != nil {

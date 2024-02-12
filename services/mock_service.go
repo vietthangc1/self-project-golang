@@ -14,7 +14,7 @@ const (
 
 type MockService struct {
 	mockRepo repo.MockRepo
-	logger logger.Logger
+	logger   logger.Logger
 }
 
 func NewMockService(
@@ -22,11 +22,11 @@ func NewMockService(
 ) *MockService {
 	return &MockService{
 		mockRepo: mockRepo,
-		logger: logger.Factory("MockService"),
+		logger:   logger.Factory("MockService"),
 	}
 }
 
-func (m *MockService) GetMock(ctx context.Context) (*entities.MockEntities, error) {
+func (m *MockService) GetMockCache(ctx context.Context) (*entities.MockEntities, error) {
 	m.logger.V(logger.LogDebugLevel).Info("Run Get Mock")
 
 	err := m.mockRepo.Get(ctx)
@@ -37,3 +37,4 @@ func (m *MockService) GetMock(ctx context.Context) (*entities.MockEntities, erro
 		Message: mockMessage,
 	}, nil
 }
+

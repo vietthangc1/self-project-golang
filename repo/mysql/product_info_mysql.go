@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/thangpham4/self-project/entities"
+	"github.com/thangpham4/self-project/pkg/commonx"
 	"gorm.io/gorm"
 )
 
@@ -20,21 +21,39 @@ func NewProductInfoMysql(
 	}
 }
 
-func (u *ProductInfoMysql) Create(ctx context.Context, product entities.ProductInfo) (entities.ProductInfo, error) {
-	err := u.db.WithContext(ctx).Create(&product).Error
+func (u *ProductInfoMysql) Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error) {
+	err := u.db.WithContext(ctx).Create(product).Error
 	if err != nil {
-		return entities.ProductInfo{}, fmt.Errorf("cannot create product, product: %v, err: %w", product, err)
+		return nil, commonx.ErrorMessages(err, "cannot create product")
 	}
 	return product, nil
 }
 
-func (u *ProductInfoMysql) Get(ctx context.Context, id uint) (entities.ProductInfo, error) {
-	var product = entities.ProductInfo{
+func (u *ProductInfoMysql) Get(ctx context.Context, id uint) (*entities.ProductInfo, error) {
+	var product = &entities.ProductInfo{
 		ID: id,
 	}
-	err := u.db.WithContext(ctx).First(&product).Error
+	err := u.db.WithContext(ctx).First(product).Error
 	if err != nil {
-		return entities.ProductInfo{}, fmt.Errorf("cannot find product, id: %d, err: %w", id, err)
+		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot find product, id: %d", id))
 	}
 	return product, nil
+}
+
+func (u *ProductInfoMysql) GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error) {
+	var products []*entities.ProductInfo
+	err := u.db.WithContext(ctx).Find(&products, ids).Error
+	if err != nil {
+		return nil, commonx.ErrorMessages(err, fmt.Sprintf("cannot find products, ids: %v", ids))
+	}
+	return products, nil
+}
+
+func (u *ProductInfoMysql) GetAll(ctx context.Context) ([]*entities.ProductInfo, error) {
+	var products []*entities.ProductInfo
+	err := u.db.WithContext(ctx).Find(&products).Error
+	if err != nil {
+		return nil, commonx.ErrorMessages(err, "cannot find all products")
+	}
+	return products, nil
 }

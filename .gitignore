@@ -1,0 +1,4 @@
+.envrc
+.golangci.yml
+.vscode
+credentials

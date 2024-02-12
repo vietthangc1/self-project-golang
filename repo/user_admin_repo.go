@@ -9,4 +9,5 @@ import (
 type UserAdminRepo interface {
 	Create(ctx context.Context, user entities.UserAdmin) (entities.UserAdmin, error)
 	Get(ctx context.Context, id uint) (entities.UserAdmin, error)
+	GetByEmail(ctx context.Context, email string) (entities.UserAdmin, error)
 }

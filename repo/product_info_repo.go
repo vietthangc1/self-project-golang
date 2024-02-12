@@ -7,6 +7,8 @@ import (
 )
 
 type ProductInfoRepo interface {
-	Get(ctx context.Context, id uint) (entities.ProductInfo, error)
-	Create(ctx context.Context, product entities.ProductInfo) (entities.ProductInfo, error)
+	Get(ctx context.Context, id uint) (*entities.ProductInfo, error)
+	GetMany(ctx context.Context, ids []uint) ([]*entities.ProductInfo, error)
+	GetAll(ctx context.Context) ([]*entities.ProductInfo, error)
+	Create(ctx context.Context, product *entities.ProductInfo) (*entities.ProductInfo, error)
 }

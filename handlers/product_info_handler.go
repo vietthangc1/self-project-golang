@@ -2,70 +2,134 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thangpham4/self-project/entities"
+	"github.com/thangpham4/self-project/pkg/commonx"
 	"github.com/thangpham4/self-project/pkg/logger"
 	"github.com/thangpham4/self-project/services"
 )
 
 type ProductInfoHandler struct {
-	productService *services.ProductInfoService
-	logger      logger.Logger
+	productService       *services.ProductInfoService
+	userAdminService     *services.UserAdminService
+	authorizationService *services.AuthorizationService
+	logger               logger.Logger
 }
 
 func NewProductInfoHandler(
 	productService *services.ProductInfoService,
+	userAdminService *services.UserAdminService,
+	authorizationService *services.AuthorizationService,
 ) *ProductInfoHandler {
 	return &ProductInfoHandler{
-		productService: productService,
-		logger:      logger.Factory("ProductInfoHandler"),
+		productService:       productService,
+		userAdminService:     userAdminService,
+		authorizationService: authorizationService,
+		logger:               logger.Factory("ProductInfoHandler"),
 	}
 }
 
 func (u *ProductInfoHandler) Create(ctx *gin.Context) {
+	user, err := u.authorizationService.VerifyMetaData(ctx)
+	if err != nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
+		return
+	}
+	if user.Role == 0 || user.Role == 1 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to create product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+
 	var product entities.ProductInfo
-	err := json.NewDecoder(ctx.Request.Body).Decode(&product)
+	err = json.NewDecoder(ctx.Request.Body).Decode(&product)
 	if err != nil {
 		u.logger.Error(err, "error in parse json", "struct", ctx.Request.Body)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	product, err = u.productService.Create(ctx, product)
+	if product.CreatedBy == "" {
+		product.CreatedBy = user.Email
+	}
+
+	productPointer, err := u.productService.Create(ctx, &product)
 	if err != nil {
-		u.logger.Error(err, "error in create user", "product", product)
+		u.logger.Error(err, "error in create product", "product", product)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusCreated, product)
+	ctx.IndentedJSON(http.StatusCreated, productPointer)
 }
 
-func (u *ProductInfoHandler) Get(ctx *gin.Context) {
-	id, ok := ctx.Params.Get("id")
+func (u *ProductInfoHandler) GetMany(ctx *gin.Context) {
+	user, err := u.authorizationService.VerifyMetaData(ctx)
+	if err != nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
+		return
+	}
+	if user.Role == 0 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to read product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+
+	ids, ok := ctx.Params.Get("id")
 	if !ok {
-		errString := "not found id in url params"
-		u.logger.Error(fmt.Errorf(errString), errString)
+		const errString = "not found id in url params"
+		u.logger.Error(commonx.ErrorMessages(commonx.ErrNotFoundParams, errString), errString)
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": errString})
 		return
 	}
 
-	idInt, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		u.logger.Error(err, "error in query id from url", "id", id)
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err})
+	idArr := strings.Split(ids, ",")
+	if len(idArr) == 0 {
+		u.logger.Error(commonx.ErrKeyNotFound, "insufficient ids input", "ids", ids)
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": commonx.ErrKeyNotFound})
 		return
 	}
 
-	product, err := u.productService.Get(ctx, uint(idInt))
+	idsUint := []uint{}
+
+	for _, idStr := range idArr {
+		idInt, errParse := strconv.ParseUint(idStr, 10, 32)
+		if errParse != nil {
+			continue
+		}
+		idUint := uint(idInt)
+		idsUint = append(idsUint, idUint)
+	}
+	products, err := u.productService.GetMany(ctx, idsUint)
 	if err != nil {
-		u.logger.Error(err, "error in getting user", "id", id)
-		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": err})
+		u.logger.Error(err, "error in getting products")
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	ctx.IndentedJSON(http.StatusOK, products)
+}
+
+func (u *ProductInfoHandler) GetAll(ctx *gin.Context) {
+	user, err := u.authorizationService.VerifyMetaData(ctx)
+	if err != nil {
+		u.logger.Error(commonx.ErrNotAuthenticated, "not found user")
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrNotAuthenticated.Error()})
 		return
 	}
-	ctx.IndentedJSON(http.StatusFound, product)
+	if user.Role == 0 {
+		u.logger.Error(commonx.ErrUnauthorized, "user does not have permission to read product", "user", user)
+		ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": commonx.ErrUnauthorized.Error()})
+		return
+	}
+	products, err := u.productService.GetAll(ctx)
+	if err != nil {
+		u.logger.Error(err, "error in getting products")
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	ctx.IndentedJSON(http.StatusOK, products)
 }

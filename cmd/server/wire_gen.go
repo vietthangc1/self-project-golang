@@ -12,7 +12,10 @@ import (
 	"github.com/thangpham4/self-project/apps/server"
 	"github.com/thangpham4/self-project/handlers"
 	"github.com/thangpham4/self-project/infra"
+	"github.com/thangpham4/self-project/pkg/apix"
+	"github.com/thangpham4/self-project/pkg/blobx"
 	"github.com/thangpham4/self-project/pkg/kvredis"
+	"github.com/thangpham4/self-project/repo/blob"
 	"github.com/thangpham4/self-project/repo/cache"
 	"github.com/thangpham4/self-project/repo/mysql"
 	"github.com/thangpham4/self-project/services"
@@ -34,14 +37,32 @@ func BuildServer(contextContext context.Context) (*gin.Engine, error) {
 	mockMysql := mysql.NewMockMysql(db)
 	mockCache := cache.NewMockCache(kvRedisImpl, mockMysql)
 	mockService := services.NewMockService(mockCache)
-	mockHandler := handlers.NewMockHandler(mockService)
+	azblobClient, err := infra.NewBlobConnection()
+	if err != nil {
+		return nil, err
+	}
+	mockHandler := handlers.NewMockHandler(mockService, azblobClient)
 	userAdminMysql := mysql.NewUserAdminMysql(db)
 	userAdminService := services.NewUserAdminService(userAdminMysql)
 	userAdminHandler := handlers.NewUserAdminHandler(userAdminService)
-	productInfoMysql := mysql.NewProductInfoMysql(db)
-	productInfoCache := cache.NewProductInfoCache(kvRedisImpl, productInfoMysql)
-	productInfoService := services.NewProductInfoService(productInfoCache)
-	productInfoHandler := handlers.NewProductInfoHandler(productInfoService)
-	engine := server.NewHTTPserver(mockHandler, userAdminHandler, productInfoHandler)
+	blobServiceImpl := blobx.NewBlobService(azblobClient)
+	readModelBlob := blob.NewReadModelBlob(blobServiceImpl)
+	readModelDataCache := cache.NewReadModelDataCache(readModelBlob, kvRedisImpl)
+	modelInfoMysql := mysql.NewModelInfoMysql(db)
+	readModelDataService := services.NewReadModelDataService(readModelDataCache, modelInfoMysql)
+	modelInfoService := services.NewModelInfoService(modelInfoMysql)
+	readModelDataHandler := handlers.NewReadModelDataHandler(readModelDataService, modelInfoService)
+	modelInfoHandler := handlers.NewModelInfoHandler(modelInfoService)
+	blockInfoMysql := mysql.NewBlockInfoMysql(db)
+	blockInfoService := services.NewBlockInfoService(blockInfoMysql)
+	blockInfoHandler := handlers.NewBlockInfoHanfler(blockInfoService)
+	apiCallerImpl := apix.NewAPICaller()
+	blockDataService := services.NewBlockDataService(blockInfoService, readModelDataService, modelInfoService, apiCallerImpl)
+	blockDataHandler := handlers.NewBlockDataHandler(blockDataService)
+	orderMysql := mysql.NewOrderMysql(db)
+	orderInfoService := services.NewOrderInfoService(orderMysql, apiCallerImpl)
+	authorizationService := services.NewAuthorizationService(userAdminService)
+	orderInfoHandler := handlers.NewOrderInfoHandler(orderInfoService, authorizationService, apiCallerImpl)
+	engine := server.NewHTTPserver(mockHandler, userAdminHandler, readModelDataHandler, modelInfoHandler, blockInfoHandler, blockDataHandler, orderInfoHandler)
 	return engine, nil
 }
